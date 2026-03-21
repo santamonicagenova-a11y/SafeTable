@@ -247,7 +247,13 @@ CREATE POLICY "active_insert" ON noshow FOR INSERT WITH CHECK (
       <div class="field"><label>Nome ristorante *</label><input id="regRist" type="text" placeholder="Es: Trattoria da Mario" onkeydown="if(event.key==='Enter')doRegister()"/></div>
       <div class="field"><label>Email</label><input id="regEmail" type="email" placeholder="tu@email.com" onkeydown="if(event.key==='Enter')doRegister()"/></div>
       <div class="field"><label>Password</label><input id="regPwd" type="password" placeholder="Min. 8 caratteri" onkeydown="if(event.key==='Enter')doRegister()"/></div>
-      <button class="btn-primary" id="btnReg" onclick="doRegister()">Crea account</button>
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:14px;padding:12px;background:rgba(255,255,255,0.04);border-radius:8px;border:0.5px solid var(--border)">
+  <input type="checkbox" id="privacyCheck" style="margin-top:3px;flex-shrink:0;accent-color:var(--red);width:16px;height:16px;cursor:pointer"/>
+  <label for="privacyCheck" style="font-size:12px;color:var(--muted);line-height:1.6;cursor:pointer">
+    Ho letto e accetto l'<a href="https://safetableapp.com/privacy" target="_blank" style="color:var(--blue);text-decoration:none">Informativa Privacy</a> e acconsento al trattamento dei miei dati personali ai sensi del GDPR per l'utilizzo della piattaforma SafeTable.
+  </label>
+</div>
+<button class="btn-primary" id="btnReg" onclick="doRegister()">Crea account</button>
       <div class="auth-switch">Hai già un account? <button class="btn-ghost" onclick="showScreen('screenLogin')">Accedi</button></div>
     </div>
   </div>
@@ -454,6 +460,7 @@ async function doRegister(){
   const ok=document.getElementById('regOk');
   const btn=document.getElementById('btnReg');
   err.classList.remove('show');ok.classList.remove('show');
+  if(!document.getElementById('privacyCheck').checked){err.textContent='Accetta la privacy policy per continuare.';err.classList.add('show');return}
   if(!code||!rist||!email||!pwd){err.textContent='Compila tutti i campi.';err.classList.add('show');return}
   if(pwd.length<8){err.textContent='Password di almeno 8 caratteri.';err.classList.add('show');return}
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Verifica codice…';
