@@ -721,6 +721,14 @@ async function eliminaUtente(uid, ristorante){
 }
 
 
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  const active = document.activeElement;
+  if (!active) return;
+  const id = active.id;
+  if (['loginEmail','loginPwd'].includes(id)) doLogin();
+  else if (['regCode','regRist','regEmail','regPwd'].includes(id)) doRegister();
+});
 initApp();
 </script>
 </body>
