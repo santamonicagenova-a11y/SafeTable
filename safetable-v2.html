@@ -138,7 +138,7 @@ details{margin-bottom:14px}
 <body>
 
 <!-- SETUP MODAL -->
-<div class="modal-bg show" id="setupModal">
+<div class="modal-bg" id="setupModal">
   <div class="modal">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px"><svg width="36" height="36" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0"><rect width="120" height="120" rx="20" fill="#E63946"/><path d="M60 8 L104 26 L104 62 Q104 88 60 112 Q16 88 16 62 L16 26 Z" fill="white" opacity="0.15"/><path d="M60 8 L104 26 L104 62 Q104 88 60 112 Q16 88 16 62 L16 26 Z" fill="none" stroke="white" stroke-width="3"/><g fill="white"><rect x="48" y="28" width="3.5" height="20" rx="1.5"/><rect x="53.5" y="28" width="3.5" height="20" rx="1.5"/><rect x="59" y="28" width="3.5" height="20" rx="1.5"/><path d="M48 44 Q48 52 51.75 54 Q55.5 52 55.5 44 Z"/><rect x="50" y="54" width="3.5" height="24" rx="1.75"/></g><g fill="white"><path d="M69 28 Q78 28 79 40 L69 44 Z"/><rect x="68" y="44" width="3.5" height="34" rx="1.75"/></g></svg><span style="font-size:18px;font-weight:600;letter-spacing:-0.3px;">SafeTable</span></div>
     <h2 style="font-size:15px;color:var(--muted);font-weight:500;margin-bottom:6px">Configurazione iniziale</h2>
@@ -264,22 +264,19 @@ CREATE POLICY "active_insert" ON noshow FOR INSERT WITH CHECK (
       <div class="auth-logo-icon"><svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><path d="M60 8 L104 26 L104 62 Q104 88 60 112 Q16 88 16 62 L16 26 Z" fill="white" opacity="0.15"/><path d="M60 8 L104 26 L104 62 Q104 88 60 112 Q16 88 16 62 L16 26 Z" fill="none" stroke="white" stroke-width="3"/><g fill="white"><rect x="48" y="28" width="3.5" height="20" rx="1.5"/><rect x="53.5" y="28" width="3.5" height="20" rx="1.5"/><rect x="59" y="28" width="3.5" height="20" rx="1.5"/><path d="M48 44 Q48 52 51.75 54 Q55.5 52 55.5 44 Z"/><rect x="50" y="54" width="3.5" height="24" rx="1.75"/></g><g fill="white"><path d="M69 28 Q78 28 79 40 L69 44 Z"/><rect x="68" y="44" width="3.5" height="34" rx="1.75"/></g></svg></div>
       <div class="auth-logo-text">SafeTable</div>
     </div>
-    <div class="auth-card">
-      <div class="auth-title">Abbonati per accedere</div>
-      <div class="auth-sub">Accesso completo al database condiviso di no-show tra ristoratori.</div>
-      <div class="plan-box">
-        <div class="plan-price" id="planPrice">€19 <span>/ mese</span></div>
-        <div class="plan-name">Piano Ristoratore</div>
-        <div class="plan-feats">
-          <div class="plan-feat"><span class="feat-ok">✓</span> Database condiviso tra ristoratori</div>
-          <div class="plan-feat"><span class="feat-ok">✓</span> Ricerca e segnalazione no-show</div>
-          <div class="plan-feat"><span class="feat-ok">✓</span> Storico aggiornato in tempo reale</div>
-          <div class="plan-feat"><span class="feat-ok">✓</span> Disdici quando vuoi</div>
-        </div>
+    <div class="auth-card" style="text-align:center">
+      <div style="font-size:52px;margin-bottom:16px">🎉</div>
+      <div class="auth-title">Benvenuto in SafeTable!</div>
+      <div class="auth-sub">Sei tra i primi ristoratori ad accedere alla piattaforma in versione beta.</div>
+      <div style="background:rgba(46,204,113,0.12);border:1px solid rgba(46,204,113,0.3);border-radius:12px;padding:20px;margin-bottom:20px;text-align:left">
+        <div style="font-size:13px;font-weight:600;color:#2ecc71;margin-bottom:10px">✓ Accesso beta gratuito</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.7">Il tuo account è stato creato con successo.<br>Un amministratore lo attiverà entro <strong style="color:var(--text)">24 ore</strong>.<br>Riceverai conferma via email non appena potrai accedere.</div>
       </div>
-      <button class="btn-primary" onclick="goToStripe()">Abbonati con Stripe</button>
-      <div class="stripe-note">Pagamento sicuro via Stripe · Cancella quando vuoi</div>
-      <button class="btn-outline" onclick="checkSub()" style="margin-top:14px;font-size:13px">Ho già pagato — Verifica</button>
+      <div style="background:var(--card2);border-radius:10px;padding:14px;margin-bottom:20px;text-align:left">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;font-weight:600">Cosa include l'accesso beta</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.9">🔍 Ricerca numeri in tempo reale<br>⚠️ Segnalazione no-show<br>📋 Storico condiviso tra ristoratori<br>🆓 Completamente gratuito durante la beta</div>
+      </div>
+      <button class="btn-outline" onclick="checkSub()" style="font-size:13px;margin-bottom:8px">Sono già stato attivato — Entra</button>
       <button class="btn-outline" onclick="doLogout()" style="font-size:13px;color:var(--muted)">Esci dall'account</button>
     </div>
   </div>
@@ -390,7 +387,6 @@ function salvaConfig(){
 
 async function initApp(){
   loadCFG();
-  document.getElementById('setupModal').classList.remove('show');
   SB=supabase.createClient(CFG.url,CFG.key);
   if(CFG.priceAmt) document.getElementById('planPrice').innerHTML=`€${CFG.priceAmt} <span>/ mese</span>`;
   const{data:{session}}=await SB.auth.getSession();
