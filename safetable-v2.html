@@ -109,6 +109,20 @@ main{max-width:480px;margin:0 auto;padding:20px 16px 100px}
 .loading{text-align:center;padding:40px 0;color:var(--muted);font-size:14px}
 .empty-state{text-align:center;padding:48px 0;color:var(--muted)}
 .empty-state .ei{font-size:40px;margin-bottom:10px}
+.cauzione-form{background:var(--card2);border:1px solid rgba(230,57,70,0.3);border-radius:var(--radius);padding:18px;margin-top:12px;animation:fadeIn .2s}
+.cauzione-form .form-title{color:#ff6b6b;font-size:14px;margin-bottom:14px}
+.cauzione-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.cauzione-total{background:rgba(230,57,70,0.1);border-radius:var(--radius-sm);padding:10px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.cauzione-total-label{font-size:12px;color:var(--muted)}
+.cauzione-total-amt{font-size:20px;font-weight:700;color:#ff6b6b;font-family:'DM Mono',monospace}
+.btn-whatsapp{width:100%;padding:13px;background:#25D366;color:white;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px}
+.btn-copy-link{width:100%;padding:11px;background:none;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--text)}
+.cauzioni-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;animation:fadeIn .2s}
+.cauzioni-status{font-size:11px;font-weight:600;padding:3px 8px;border-radius:10px}
+.s-attesa{background:rgba(243,156,18,0.15);color:#f39c12}
+.s-pagata{background:rgba(46,204,113,0.15);color:#2ecc71}
+.s-usata{background:rgba(74,158,255,0.15);color:#4a9eff}
+.s-trattenuta{background:rgba(230,57,70,0.15);color:#ff6b6b}
 .admin-section{margin-bottom:24px}
 .admin-section h2{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
 .invite-row{display:flex;gap:8px}
@@ -307,10 +321,11 @@ CREATE POLICY "active_insert" ON noshow FOR INSERT WITH CHECK (
       <button class="btn-logout" onclick="doLogout()">Esci</button>
     </div>
   </header>
-  <nav class="tabs" id="mainTabs">
+  <nav class="tabs" id="mainTabs" style="grid-template-columns:1fr 1fr 1fr 1fr">
     <div class="tab active" onclick="goTab('cerca')"><span class="tab-icon">🔍</span>Cerca</div>
     <div class="tab" onclick="goTab('segnala')"><span class="tab-icon">⚠️</span>Segnala</div>
     <div class="tab" onclick="goTab('feed')"><span class="tab-icon">📋</span>Storico</div>
+    <div class="tab" onclick="goTab('cauzioni')"><span class="tab-icon">💳</span>Cauzioni</div>
   </nav>
   <main>
     <div class="page active" id="page-cerca">
@@ -342,6 +357,14 @@ CREATE POLICY "active_insert" ON noshow FOR INSERT WITH CHECK (
       </div>
       <div id="feedList"><div class="loading">Caricamento…</div></div>
     </div>
+    <div class="page hidden" id="page-cauzioni">
+      <div class="feed-header">
+        <div class="feed-title">Cauzioni attive</div>
+        <div class="count-badge" id="cauzioniCount">—</div>
+      </div>
+      <div id="cauzioniList"><div class="loading">Caricamento…</div></div>
+    </div>
+
     <div class="page hidden" id="page-admin">
       <div class="admin-section">
         <h2>Genera e invia codice invito</h2>
@@ -352,11 +375,9 @@ CREATE POLICY "active_insert" ON noshow FOR INSERT WITH CHECK (
         </div>
         <div style="display:flex;gap:8px;margin-top:8px">
           <input id="inviteEmail" type="email" placeholder="email@ristoratore.it" style="flex:1;padding:10px 13px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;background:var(--bg);color:var(--text);font-family:inherit;outline:none"/>
-          <button id="btnSendInvite" onclick="sendInvite()" style="padding:10px 16px;background:var(--red);color:white;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap">✉ Invia</button>
+          <button onclick="inviaMailto()" style="padding:10px 16px;background:var(--red);color:white;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap">✉ Apri mail</button>
         </div>
-        <div class="toast toast-ok" id="toastInviteOk" style="margin-top:8px">✓ Invito inviato con successo</div>
-        <div class="toast toast-err" id="toastInviteErr" style="margin-top:8px">✗ Errore nell'invio. Riprova.</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:8px">Genera un codice, inserisci l'email del ristoratore e clicca Invia.</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:8px">Genera un codice, inserisci l'email e clicca <b>Apri mail</b> — si apre il tuo client di posta con il messaggio già compilato.</div>
       </div>
       <div class="admin-section">
         <h2>Utenti registrati</h2>
@@ -541,12 +562,15 @@ async function cerca(raw){
       <span style="font-size:11px;color:var(--muted);white-space:nowrap;margin-left:8px">${d}</span>
     </div>`;
   }).join('');
+  const cauzioneBtn = rows.length>=2 ? `<button onclick="mostraCauzioneForm('${raw}')" style="width:100%;padding:12px;background:var(--red);color:white;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:8px">💳 Richiedi cauzione</button>` : '';
   res.innerHTML=`<div class="result-box result-danger" style="text-align:center;padding:28px 20px;background:${riskBg};margin-bottom:12px">
     <div style="font-size:48px;margin-bottom:12px">🛡</div>
     <div style="font-size:22px;font-weight:700;letter-spacing:2px;color:${riskColor};margin-bottom:6px">RISCHIO ${risk}</div>
     <div style="font-size:14px;color:var(--muted)">${rows.length} segnalazion${rows.length>1?'i':'e'} da ${ristN} ristorante${ristN!==1?'i':''}</div>
     ${rows[0].name?`<div style="font-size:13px;color:var(--text);margin-top:8px">👤 ${rows[0].name}</div>`:''}
+    ${cauzioneBtn}
   </div>
+  <div id="cauzioneFormContainer"></div>
   <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:8px">Storico segnalazioni</div>
   <div class="seg-list">${items}</div>`;
 }
@@ -616,37 +640,25 @@ function copyInvite(){
   });
 }
 
-async function sendInvite(){
+function inviaMailto(){
   const code=document.getElementById('inviteCode').value;
   const email=document.getElementById('inviteEmail').value.trim();
-  const btn=document.getElementById('btnSendInvite');
-  const toastOk=document.getElementById('toastInviteOk');
-  const toastErr=document.getElementById('toastInviteErr');
-  toastOk.classList.remove('show');toastErr.classList.remove('show');
   if(!code){alert('Prima genera un codice invito.');return;}
   if(!email){alert('Inserisci l\'email del ristoratore.');return;}
-  btn.disabled=true;btn.textContent='Invio…';
-  try{
-    const{data:{session}}=await SB.auth.getSession();
-    const res=await fetch(`https://ltgvyanqzkpulocypsve.supabase.co/functions/v1/send-invite`,{
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'Authorization':`Bearer ${session.access_token}`
-      },
-      body:JSON.stringify({email,code})
-    });
-    const data=await res.json();
-    if(res.ok&&data.success){
-      toastOk.classList.add('show');setTimeout(()=>toastOk.classList.remove('show'),3000);
-      document.getElementById('inviteEmail').value='';
-    } else {
-      toastErr.classList.add('show');setTimeout(()=>toastErr.classList.remove('show'),3000);
-    }
-  }catch(e){
-    toastErr.classList.add('show');setTimeout(()=>toastErr.classList.remove('show'),3000);
-  }
-  btn.disabled=false;btn.textContent='✉ Invia';
+  const rist=currentProfile&&currentProfile.ristorante?currentProfile.ristorante:'SafeTable';
+  const oggetto=encodeURIComponent('Il tuo codice invito per SafeTable');
+  const corpo=encodeURIComponent(
+    'Ciao,\n\n' +
+    'ti invito a provare SafeTable, il database condiviso tra ristoratori per segnalare i clienti no-show.\n\n' +
+    'Il tuo codice invito personale è:\n\n' +
+    '    ' + code + '\n\n' +
+    'Per registrarti vai su: https://safetableapp.com\n' +
+    'Clicca su "Registrati con codice invito" e inserisci il codice qui sopra.\n\n' +
+    'L\'accesso è gratuito durante la fase beta.\n\n' +
+    'A presto,\n' + rist
+  );
+  window.location.href=`mailto:${email}?subject=${oggetto}&body=${corpo}`;
+  document.getElementById('inviteEmail').value='';
 }
 
 async function eliminaSegnalazione(id){
