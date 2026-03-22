@@ -417,7 +417,7 @@ async function initApp(){
     console.error('Supabase init error:', e);
     setTimeout(initApp, 500); return;
   }
-  if(CFG.priceAmt) document.getElementById('planPrice').innerHTML=`€${CFG.priceAmt} <span>/ mese</span>`;
+  const pp2=document.getElementById('planPrice'); if(CFG.priceAmt&&pp2) pp2.innerHTML=`€${CFG.priceAmt} <span>/ mese</span>`;
   const{data:{session}}=await SB.auth.getSession();
   if(session){currentUser=session.user;await loadProfile()}
   else showScreen('screenLogin');
