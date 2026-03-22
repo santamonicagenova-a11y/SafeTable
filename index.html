@@ -631,6 +631,44 @@ async function segnala(){
   }
 }
 
+async function loadCauzioni(){
+  const list=document.getElementById('cauzioniList');
+  if(!list) return;
+  list.innerHTML='<div class="loading">Caricamento…</div>';
+  const{data:rows,error}=await SB.from('cauzioni').select('*')
+    .eq('ristorante_id',currentUser.id)
+    .order('created_at',{ascending:false}).limit(30);
+  if(error){list.innerHTML='<div class="loading">Errore: '+error.message+'</div>';return}
+  document.getElementById('cauzioniCount').textContent=(rows||[]).filter(r=>r.status==='in_attesa'||r.status==='pagata').length+' attive';
+  if(!rows||rows.length===0){list.innerHTML='<div class="empty-state"><div class="ei">💳</div>Nessuna cauzione ancora</div>';return}
+  list.innerHTML=rows.map(r=>{
+    const d=r.created_at?new Date(r.created_at).toLocaleDateString('it-IT'):'—';
+    const sc={in_attesa:'s-attesa',pagata:'s-pagata',usata:'s-usata',trattenuta:'s-trattenuta'}[r.status]||'s-attesa';
+    const sl={in_attesa:'In attesa',pagata:'Pagata',usata:'Scalata dal conto',trattenuta:'Trattenuta'}[r.status]||r.status;
+    const actions=r.status==='pagata'?`
+      <div style="display:flex;gap:6px;margin-top:10px">
+        <button onclick="aggiornaCauzione('${r.id}','usata')" style="flex:1;padding:8px;border:1px solid #4a9eff;border-radius:6px;background:none;color:#4a9eff;font-size:12px;cursor:pointer;font-family:inherit">✓ Scalata dal conto</button>
+        <button onclick="aggiornaCauzione('${r.id}','trattenuta')" style="flex:1;padding:8px;border:1px solid #ff6b6b;border-radius:6px;background:none;color:#ff6b6b;font-size:12px;cursor:pointer;font-family:inherit">✕ No-show</button>
+      </div>`:'';
+    return`<div class="cauzioni-item" id="cauzione-${r.id}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+        <div style="font-family:'DM Mono',monospace;font-size:14px;font-weight:500">${r.phone}</div>
+        <span class="cauzioni-status ${sc}">${sl}</span>
+      </div>
+      <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px">€${r.totale} <span style="font-size:12px;color:var(--muted);font-weight:400">(${r.persone} pers. × €${r.importo_persona})</span></div>
+      ${r.note?`<div style="font-size:12px;color:var(--muted);margin-bottom:4px">${r.note}</div>`:''}
+      <div style="font-size:11px;color:var(--muted)">${d} · ${r.ristorante}</div>
+      ${r.status==='in_attesa'?`<a href="${r.stripe_payment_link}" target="_blank" style="display:block;font-size:11px;color:#4a9eff;margin-top:6px;text-decoration:none">🔗 Link pagamento</a>`:''}
+      ${actions}
+    </div>`;
+  }).join('');
+}
+
+async function aggiornaCauzione(id,status){
+  await SB.from('cauzioni').update({status}).eq('id',id);
+  loadCauzioni();
+}
+
 async function loadFeed(){
   const list=document.getElementById('feedList');
   list.innerHTML='<div class="loading">Caricamento…</div>';
