@@ -519,7 +519,7 @@ async function doRegister(){
   await SB.auth.signInWithPassword({email,password:pwd});
 }
 
-function doLogout(){SB.auth.signOut()}
+function doLogout(){if(SB) SB.auth.signOut(); else showScreen('screenLogin');}
 
 function goToStripe(){
   if(!CFG.stripeLink){
