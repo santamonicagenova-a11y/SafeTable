@@ -285,7 +285,7 @@ CREATE POLICY "active_insert" ON noshow FOR INSERT WITH CHECK (
       <div class="auth-sub">Sei tra i primi ristoratori ad accedere alla piattaforma in versione beta.</div>
       <div style="background:rgba(46,204,113,0.12);border:1px solid rgba(46,204,113,0.3);border-radius:12px;padding:20px;margin-bottom:20px;text-align:left">
         <div style="font-size:13px;font-weight:600;color:#2ecc71;margin-bottom:10px">✓ Accesso beta gratuito</div>
-        <div style="font-size:13px;color:var(--muted);line-height:1.7">Il tuo account è stato creato con successo.<br>Un amministratore lo attiverà entro <strong style="color:var(--text)">24 ore</strong>.<br>Riceverai conferma via email non appena potrai accedere.</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.7">Il tuo account è stato creato con successo.<br>Durante la fase di test <strong style="color:var(--text)">l'accesso viene attivato automaticamente</strong>.<br>Clicca il pulsante qui sotto per entrare subito.</div>
       </div>
       <div style="background:var(--card2);border-radius:10px;padding:14px;margin-bottom:20px;text-align:left">
         <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;font-weight:600">Cosa include l'accesso beta</div>
@@ -524,7 +524,7 @@ async function doRegister(){
     err.textContent=authErr.message;err.classList.add('show');return;
   }
   const uid=authData.user.id;
-  await SB.from('profiles').insert([{id:uid,ristorante:rist,role:'user',subscription_status:'inactive'}]);
+  await SB.from('profiles').insert([{id:uid,ristorante:rist,role:'user',subscription_status:'active'}]);
   await SB.from('invite_codes').update({used:true,used_by:uid}).eq('id',invite.id);
   btn.disabled=false;btn.textContent='Crea account';
   await SB.auth.signInWithPassword({email,password:pwd});
