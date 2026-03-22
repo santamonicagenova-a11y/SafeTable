@@ -61,9 +61,9 @@ header{position:sticky;top:0;z-index:100;background:var(--card);border-bottom:1p
 .btn-logout{background:none;border:none;font-size:12px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;padding:6px 10px;border-radius:6px}
 .btn-logout:hover{background:var(--bg);color:var(--text)}
 .tabs{max-width:480px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:63px;z-index:99}
-.tab{padding:11px 8px;text-align:center;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;user-select:none}
+.tab{padding:10px 4px;text-align:center;font-size:10px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;user-select:none;white-space:nowrap}
 .tab.active{color:var(--red);border-bottom-color:var(--red)}
-.tab-icon{font-size:15px;display:flex;justify-content:center;margin-bottom:3px;color:inherit}
+.tab-icon{font-size:13px;display:flex;justify-content:center;margin-bottom:2px;color:inherit}
 main{max-width:480px;margin:0 auto;padding:20px 16px 100px}
 .page{display:none}
 .page.active{display:block}
@@ -322,10 +322,10 @@ CREATE POLICY "active_insert" ON noshow FOR INSERT WITH CHECK (
     </div>
   </header>
   <nav class="tabs" id="mainTabs" style="grid-template-columns:1fr 1fr 1fr 1fr">
-    <div class="tab active" onclick="goTab('cerca')"><span class="tab-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="6"/><line x1="14.5" y1="14.5" x2="20" y2="20"/><line x1="10" y1="7" x2="10" y2="7.01"/><line x1="7" y1="10" x2="13" y2="10"/></svg></span>Cerca</div>
-    <div class="tab" onclick="goTab('segnala')"><span class="tab-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3C8 3 4 6 4 10c0 5 8 11 8 11s8-6 8-11c0-4-4-7-8-7z"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="15" r="0.8" fill="currentColor"/></svg></span>Segnala</div>
-    <div class="tab" onclick="goTab('feed')"><span class="tab-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="3"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg></span>Storico</div>
-    <div class="tab" onclick="goTab('cauzioni')"><span class="tab-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="3"/><path d="M16 7V5a4 4 0 0 0-8 0v2"/><circle cx="12" cy="14" r="2"/></svg></span>Cauzioni</div>
+    <div class="tab active" onclick="goTab('cerca')"><span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="6"/><line x1="14.5" y1="14.5" x2="20" y2="20"/><line x1="10" y1="7" x2="10" y2="7.01"/><line x1="7" y1="10" x2="13" y2="10"/></svg></span>Cerca</div>
+    <div class="tab" onclick="goTab('segnala')"><span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3C8 3 4 6 4 10c0 5 8 11 8 11s8-6 8-11c0-4-4-7-8-7z"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="15" r="0.8" fill="currentColor"/></svg></span>Segnala</div>
+    <div class="tab" onclick="goTab('feed')"><span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="3"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg></span>Storico</div>
+    <div class="tab" onclick="goTab('cauzioni')"><span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="3"/><path d="M16 7V5a4 4 0 0 0-8 0v2"/><circle cx="12" cy="14" r="2"/></svg></span>Cauzioni</div>
   </nav>
   <main>
     <div class="page active" id="page-cerca">
@@ -457,7 +457,7 @@ function showApp(){
     tabs.style.gridTemplateColumns='1fr 1fr 1fr 1fr';
     const t=document.createElement('div');
     t.className='tab';t.id='tabAdmin';
-    t.innerHTML='<span class="tab-icon">🛡️</span>Admin';
+    t.innerHTML='<span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3L4 7v5c0 5 4 9 8 10 4-1 8-5 8-10V7z"/><polyline points="9,12 11,14 15,10"/></svg></span>Admin';
     t.onclick=()=>goTab('admin');
     tabs.appendChild(t);
   }
