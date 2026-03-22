@@ -472,9 +472,15 @@ async function doLogin(){
   const btn=document.getElementById('btnLogin');
   err.classList.remove('show');
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span>';
-  const{error}=await SB.auth.signInWithPassword({email,password:pwd});
+  const{error, data}=await SB.auth.signInWithPassword({email,password:pwd});
   btn.disabled=false;btn.textContent='Accedi';
+  console.log('Login result:', error, data);
   if(error){err.textContent='Email o password errati.';err.classList.add('show')}
+  else if(data&&data.user){
+    console.log('Login OK, loading profile...');
+    currentUser=data.user;
+    await loadProfile();
+  }
 }
 
 async function doRegister(){
