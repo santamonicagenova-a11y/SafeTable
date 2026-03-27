@@ -830,7 +830,6 @@ async function loadCauzioni(){
     const sl={in_attesa:'In attesa',pagata:'Pagata',usata:'Scalata dal conto',trattenuta:'Trattenuta'}[r.status]||r.status;
     const actions=r.status==='pagata'?`
       <div style="display:flex;gap:6px;margin-top:10px">
-        <button onclick="aggiornaCauzione('${r.id}','usata')" style="flex:1;padding:8px;border:1px solid #4a9eff;border-radius:6px;background:none;color:#4a9eff;font-size:12px;cursor:pointer;font-family:inherit">✓ Scalata dal conto</button>
         <button onclick="addebitaCauzione('${r.id}')" style="flex:1;padding:8px;border:1px solid #ff6b6b;border-radius:6px;background:none;color:#ff6b6b;font-size:12px;cursor:pointer;font-family:inherit">💳 Addebita no-show</button>
       </div>`:'';
     return`<div class="cauzioni-item" id="cauzione-${r.id}">
