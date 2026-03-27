@@ -789,15 +789,37 @@ async function generaLinkCauzione(phone) {
   const btn = document.getElementById('btnGeneraLink');
   const toastErr = document.getElementById('toastCauzioneErr');
   if (!persone || !importo) return;
-  // Use static Stripe link if available
-  const staticLink = setupConfig.stripeLinks && setupConfig.stripeLinks[persone];
-  if (staticLink) {
-    mostraLinkCauzione(phone, staticLink, persone, importo);
-    return;
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Generazione link…';
+
+  try {
+    const res = await fetch(
+      'https://ltgvyanqzkpulocypsve.supabase.co/functions/v1/create-setup-intent',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': CFG.key },
+        body: JSON.stringify({
+          phone,
+          name: note || 'Cliente',
+          persone,
+          importo_persona: importo,
+          ristorante: currentProfile.ristorante,
+          ristorante_id: currentUser.id,
+        })
+      }
+    );
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    mostraLinkCauzione(phone, data.url, persone, importo);
+  } catch(err) {
+    toastErr.textContent = '✗ ' + (err.message || 'Errore. Riprova.');
+    toastErr.classList.add('show');
+    setTimeout(() => { toastErr.classList.remove('show'); toastErr.textContent = '✗ Errore. Riprova.'; }, 4000);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Genera link garanzia';
   }
-  // Fallback: show error asking to configure link in Setup
-  toastErr.textContent = 'Configura il link Stripe per ' + persone + ' person' + (persone>1?'e':'a') + ' nel tab Setup.';
-  toastErr.classList.add('show'); setTimeout(() => { toastErr.classList.remove('show'); toastErr.textContent='✗ Errore. Riprova.'; }, 4000);
 }
 
 function mostraLinkCauzione(phone, link, persone, importo) {
@@ -845,7 +867,7 @@ async function loadCauzioni(){
     const actions=r.status==='pagata'?`
       <div style="display:flex;gap:6px;margin-top:10px">
         <button onclick="aggiornaCauzione('${r.id}','usata')" style="flex:1;padding:8px;border:1px solid #4a9eff;border-radius:6px;background:none;color:#4a9eff;font-size:12px;cursor:pointer;font-family:inherit">✓ Scalata dal conto</button>
-        <button onclick="aggiornaCauzione('${r.id}','trattenuta')" style="flex:1;padding:8px;border:1px solid #ff6b6b;border-radius:6px;background:none;color:#ff6b6b;font-size:12px;cursor:pointer;font-family:inherit">✕ No-show</button>
+        <button onclick="addebitaCauzione('${r.id}')" style="flex:1;padding:8px;border:1px solid #ff6b6b;border-radius:6px;background:none;color:#ff6b6b;font-size:12px;cursor:pointer;font-family:inherit">💳 Addebita no-show</button>
       </div>`:'';
     return`<div class="cauzioni-item" id="cauzione-${r.id}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
@@ -864,6 +886,33 @@ async function loadCauzioni(){
 async function aggiornaCauzione(id,status){
   await SB.from('cauzioni').update({status}).eq('id',id);
   loadCauzioni();
+}
+
+async function addebitaCauzione(id) {
+  if (!confirm('Confermi di addebitare la penale per no-show? L\'importo verrà addebitato sulla carta del cliente.')) return;
+  const item = document.getElementById('cauzione-' + id);
+  if (item) {
+    const btns = item.querySelectorAll('button');
+    btns.forEach(b => { b.disabled = true; });
+    const noShowBtn = [...btns].find(b => b.textContent.includes('Addebita'));
+    if (noShowBtn) noShowBtn.innerHTML = '<span class="spinner"></span> Addebito…';
+  }
+  try {
+    const res = await fetch(
+      'https://ltgvyanqzkpulocypsve.supabase.co/functions/v1/charge-cauzione',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': CFG.key },
+        body: JSON.stringify({ cauzione_id: id })
+      }
+    );
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    loadCauzioni();
+  } catch(err) {
+    alert('Errore addebito: ' + (err.message || 'Riprova.'));
+    loadCauzioni();
+  }
 }
 
 async function loadFeed(){
