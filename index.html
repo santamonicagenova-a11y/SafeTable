@@ -2,567 +2,1196 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Santamonica — Genova</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>NoShowApp</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20120%20120%22%3E%3Crect%20width%3D%22120%22%20height%3D%22120%22%20rx%3D%2224%22%20fill%3D%22%23E63946%22/%3E%3Cpath%20d%3D%22M60%2010%20L102%2027%20L102%2063%20Q102%2088%2060%20110%20Q18%2088%2018%2063%20L18%2027%20Z%22%20fill%3D%22white%22%20opacity%3D%220.15%22/%3E%3Cpath%20d%3D%22M60%2010%20L102%2027%20L102%2063%20Q102%2088%2060%20110%20Q18%2088%2018%2063%20L18%2027%20Z%22%20fill%3D%22none%22%20stroke%3D%22white%22%20stroke-width%3D%223%22/%3E%3Cg%20fill%3D%22white%22%3E%3Crect%20x%3D%2248%22%20y%3D%2228%22%20width%3D%223.5%22%20height%3D%2220%22%20rx%3D%221.5%22/%3E%3Crect%20x%3D%2253.5%22%20y%3D%2228%22%20width%3D%223.5%22%20height%3D%2220%22%20rx%3D%221.5%22/%3E%3Crect%20x%3D%2259%22%20y%3D%2228%22%20width%3D%223.5%22%20height%3D%2220%22%20rx%3D%221.5%22/%3E%3Cpath%20d%3D%22M48%2044%20Q48%2052%2051.75%2054%20Q55.5%2052%2055.5%2044%20Z%22/%3E%3Crect%20x%3D%2250%22%20y%3D%2254%22%20width%3D%223.5%22%20height%3D%2224%22%20rx%3D%221.75%22/%3E%3C/g%3E%3Cg%20fill%3D%22white%22%3E%3Cpath%20d%3D%22M69%2028%20Q78%2028%2079%2040%20L69%2044%20Z%22/%3E%3Crect%20x%3D%2268%22%20y%3D%2244%22%20width%3D%223.5%22%20height%3D%2234%22%20rx%3D%221.75%22/%3E%3C/g%3E%3C/svg%3E">
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  :root {
-    --sand: #f5f0e8;
-    --warm-white: #faf8f4;
-    --ink: #1a1814;
-    --ink-soft: #3a3630;
-    --terracotta: #c4734a;
-    --sea: #4a7c8a;
-    --gold: #b89d6a;
-    --divider: rgba(26,24,20,0.12);
-  }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; font-size: 16px; }
-  body { background: var(--warm-white); color: var(--ink); font-family: 'Jost', sans-serif; font-weight: 300; overflow-x: hidden; }
-  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 2rem; background: transparent; transition: background 0.4s, backdrop-filter 0.4s; }
-  nav.scrolled { background: rgba(250,248,244,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--divider); }
-  .nav-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; font-weight: 400; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink); text-decoration: none; }
-  .nav-logo .sub { font-size: 1rem; letter-spacing: 0.12em; opacity: 0.55; font-weight: 300; text-transform: lowercase; }
-  .nav-links { display: flex; gap: 2rem; list-style: none; }
-  .nav-links a { font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-soft); text-decoration: none; transition: color 0.2s; }
-  .nav-links a:hover { color: var(--terracotta); }
-  .nav-cta { font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--warm-white); background: var(--ink); padding: 0.55rem 1.2rem; text-decoration: none; transition: background 0.2s; }
-  .nav-cta:hover { background: var(--terracotta); }
-  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; }
-  .hamburger span { display: block; width: 24px; height: 1.5px; background: var(--ink); }
-  .hero { min-height: 100svh; display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; }
-  .hero-text-panel { display: flex; flex-direction: column; justify-content: flex-end; padding: 8rem 4rem 5rem 4rem; background: var(--sand); }
-  .hero-eyebrow { font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--terracotta); margin-bottom: 1.5rem; opacity: 0; animation: fadeUp 0.8s 0.2s forwards; }
-  .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(3.5rem, 8vw, 6rem); font-weight: 300; line-height: 0.95; margin-bottom: 2rem; opacity: 0; animation: fadeUp 0.8s 0.35s forwards; }
-  .hero-title em { font-style: italic; color: var(--terracotta); }
-  .hero-desc { font-size: 0.88rem; line-height: 1.75; color: var(--ink-soft); max-width: 380px; margin-bottom: 3rem; opacity: 0; animation: fadeUp 0.8s 0.5s forwards; }
-  .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; opacity: 0; animation: fadeUp 0.8s 0.65s forwards; }
-  .hero-scroll-indicator { position: absolute; bottom: 2.5rem; left: 4rem; display: flex; align-items: center; gap: 0.8rem; font-size: 0.62rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--ink-soft); opacity: 0; animation: fadeUp 1s 1s forwards; }
-  .hero-scroll-indicator::before { content: ''; display: block; width: 40px; height: 1px; background: var(--gold); }
-  .hero-image-panel { position: relative; overflow: hidden; }
-  .hero-image-panel img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.05); animation: zoomOut 1.4s 0.1s cubic-bezier(0.25,0.46,0.45,0.94) forwards; }
-  .btn-primary { display: inline-block; font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--warm-white); background: var(--ink); padding: 0.9rem 2rem; text-decoration: none; transition: background 0.2s; }
-  .btn-primary:hover { background: var(--terracotta); }
-  .btn-secondary { display: inline-block; font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink); border: 1px solid var(--ink); padding: 0.9rem 2rem; text-decoration: none; transition: all 0.2s; }
-  .btn-secondary:hover { background: var(--ink); color: var(--warm-white); }
-  section { padding: 6rem 2rem; }
-  .section-inner { max-width: 1200px; margin: 0 auto; }
-  .section-label { font-size: 0.62rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--terracotta); margin-bottom: 1rem; }
-  .section-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 300; line-height: 1.1; margin-bottom: 1.5rem; }
-  .section-title em { font-style: italic; color: var(--terracotta); }
-  .cucina-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; }
-  .cucina-body { font-size: 0.9rem; line-height: 1.9; color: var(--ink-soft); }
-  .cucina-body p + p { margin-top: 1rem; }
-  .cucina-actions { margin-top: 2.5rem; }
-  .cucina-images { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-  .cucina-images img { width: 100%; aspect-ratio: 3/4; object-fit: cover; transition: transform 0.5s ease; }
-  .cucina-images img:first-child { margin-top: 3rem; }
-  .cucina-images img:hover { transform: scale(1.02); }
-  .quote-section { background: var(--ink); padding: 2.5rem 2rem; text-align: center; }
-  .quote-text { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.4rem, 3vw, 2.2rem); font-weight: 300; font-style: italic; color: var(--sand); line-height: 1.4; max-width: 800px; margin: 0 auto 0.75rem; }
-  .quote-attr { font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); }
-  .cantina-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; }
-  .cantina-image { position: relative; }
-  .cantina-image img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
-  .cantina-image::after { content: ''; position: absolute; top: -1.5rem; left: -1.5rem; right: 1.5rem; bottom: 1.5rem; border: 1px solid var(--gold); z-index: -1; pointer-events: none; }
-  .info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3rem; padding-top: 3rem; border-top: 1px solid var(--divider); }
-  .info-block-label { font-size: 0.62rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
-  .info-block-content { font-size: 0.88rem; line-height: 2; color: var(--ink-soft); }
-  .info-block-content a { color: var(--ink); text-decoration: none; }
-  .info-block-content a:hover { color: var(--terracotta); }
-  .regalo-section { background: var(--sand); }
-  .regalo-inner { max-width: 700px; margin: 0 auto; text-align: center; }
-  .regalo-body { font-size: 0.9rem; line-height: 1.85; color: var(--ink-soft); margin-bottom: 2.5rem; }
-  .contatti-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: start; }
-  .form-group { margin-bottom: 1.5rem; }
-  .form-group label { display: block; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 0.5rem; }
-  .form-group input, .form-group textarea { width: 100%; padding: 0.85rem 0; border: none; border-bottom: 1px solid var(--divider); background: transparent; font-family: 'Jost', sans-serif; font-size: 0.9rem; color: var(--ink); outline: none; transition: border-color 0.2s; resize: none; }
-  .form-group input:focus, .form-group textarea:focus { border-bottom-color: var(--terracotta); }
-  .form-group textarea { min-height: 100px; }
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-  .form-check { display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 2rem; }
-  .form-check input[type=checkbox] { margin-top: 2px; accent-color: var(--terracotta); }
-  .form-check label { font-size: 0.75rem; color: var(--ink-soft); line-height: 1.5; }
-  .form-check label a { color: var(--terracotta); text-decoration: none; }
-  .form-status { display: none; margin-top: 1rem; font-size: 0.85rem; padding: 0.75rem 1rem; }
-  .form-status.success { display: block; background: #eaf3de; color: #3b6d11; }
-  .form-status.error { display: block; background: #fcebeb; color: #a32d2d; }
-  .map-wrapper { width: 100%; }
-  .map-wrapper iframe { width: 100%; height: 380px; border: none; display: block; }
-  .map-bar { background: var(--sand); padding: 1rem 1.2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; border-top: 1px solid var(--divider); }
-  .map-bar-address { font-size: 0.82rem; line-height: 1.6; color: var(--ink-soft); }
-  .map-bar-label { display: block; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); font-weight: 400; margin-bottom: 0.2rem; }
-  .map-bar-link { font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--terracotta); text-decoration: none; white-space: nowrap; }
-  .map-bar-link:hover { text-decoration: underline; }
-  footer { background: var(--ink); color: var(--sand); padding: 3rem 2rem; }
-  .footer-inner { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem; }
-  .footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--sand); text-decoration: none; }
-  .footer-social { display: flex; gap: 1.5rem; }
-  .footer-social a { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); text-decoration: none; transition: color 0.2s; }
-  .footer-social a:hover { color: var(--sand); }
-  .footer-copy { font-size: 0.68rem; color: rgba(245,240,232,0.4); letter-spacing: 0.1em; }
-  .mobile-menu { display: none; position: fixed; inset: 0; z-index: 200; background: var(--warm-white); flex-direction: column; justify-content: center; align-items: center; gap: 2.5rem; }
-  .mobile-menu.open { display: flex; }
-  .mobile-menu a { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; font-style: italic; color: var(--ink); text-decoration: none; transition: color 0.2s; }
-  .mobile-menu a:hover { color: var(--terracotta); }
-  .menu-close { position: absolute; top: 1.5rem; right: 2rem; background: none; border: none; cursor: pointer; font-size: 1.5rem; color: var(--ink); }
-  #cookie-banner { position: fixed; bottom: 0; left: 0; right: 0; z-index: 999; background: var(--ink); padding: 1.2rem 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; border-top: 2px solid var(--terracotta); transform: translateY(100%); transition: transform 0.4s ease; }
-  #cookie-banner.visible { transform: translateY(0); }
-  #cookie-banner p { font-size: 0.78rem; line-height: 1.6; color: rgba(245,240,232,0.85); max-width: 700px; }
-  #cookie-banner a { color: var(--gold); text-decoration: underline; }
-  .cookie-actions { display: flex; gap: 0.75rem; flex-shrink: 0; }
-  .cookie-btn { font-family: 'Jost', sans-serif; font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.6rem 1.2rem; border: none; cursor: pointer; transition: background 0.2s; }
-  .cookie-accept { background: var(--terracotta); color: var(--warm-white); }
-  .cookie-accept:hover { background: #b5633d; }
-  .cookie-decline { background: transparent; color: rgba(245,240,232,0.6); border: 1px solid rgba(245,240,232,0.25); }
-  .cookie-decline:hover { color: var(--sand); border-color: rgba(245,240,232,0.5); }
-
-  /* GALLERIA */
-  .galleria-section { background: var(--ink); padding: 6rem 2rem; }
-  .galleria-section .section-label { color: var(--gold); }
-  .galleria-section .section-title { color: var(--sand); }
-  .galleria-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: auto auto; gap: 0.75rem; margin-top: 3rem; }
-  .galleria-item { overflow: hidden; cursor: pointer; }
-  .galleria-item img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.6s ease; }
-  .galleria-item:hover img { transform: scale(1.04); }
-  .galleria-item.grande { grid-column: span 2; }
-  .galleria-item { aspect-ratio: 1; }
-  .galleria-item.grande { aspect-ratio: 2/1; }
-
-  /* LIGHTBOX */
-  #lightbox { position: fixed; inset: 0; z-index: 600; background: rgba(26,24,20,0.95); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; padding: 2rem; }
-  #lightbox.visible { opacity: 1; pointer-events: all; }
-  #lightbox img { max-width: 90vw; max-height: 88vh; object-fit: contain; }
-  #lightbox-close { position: absolute; top: 1.5rem; right: 2rem; background: none; border: none; color: var(--sand); font-size: 1.5rem; cursor: pointer; opacity: 0.7; transition: opacity 0.2s; }
-  #lightbox-close:hover { opacity: 1; }
-  #lightbox-prev, #lightbox-next { position: absolute; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--sand); font-size: 2rem; cursor: pointer; opacity: 0.5; transition: opacity 0.2s; padding: 1rem; }
-  #lightbox-prev { left: 1rem; }
-  #lightbox-next { right: 1rem; }
-  #lightbox-prev:hover, #lightbox-next:hover { opacity: 1; }
-
-  @media (max-width: 900px) {
-    .galleria-grid { grid-template-columns: repeat(2, 1fr); }
-    .galleria-item.grande { grid-column: span 2; aspect-ratio: 3/2; }
-  }
-  @media (max-width: 600px) {
-    .galleria-grid { grid-template-columns: 1fr; }
-    .galleria-item.grande { grid-column: span 1; aspect-ratio: 4/3; }
-  }
-
-  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
-  @keyframes zoomOut { from { transform: scale(1.05); } to { transform: scale(1); } }
-  .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.7s ease, transform 0.7s ease; }
-  .reveal.visible { opacity: 1; transform: none; }
-  @media (max-width: 900px) {
-    nav { padding: 1rem 1.5rem; }
-    .nav-links, .nav-cta { display: none; }
-    .hamburger { display: flex; }
-    .hero { grid-template-columns: 1fr; }
-    .hero-text-panel { padding: 7rem 1.5rem 3rem; order: 2; }
-    .hero-image-panel { height: 55vw; min-height: 280px; order: 1; }
-    .hero-scroll-indicator { display: none; }
-    .cucina-grid, .cantina-grid, .contatti-grid { grid-template-columns: 1fr; gap: 3rem; }
-    .cucina-images { grid-template-columns: 1fr 1fr; }
-    .cucina-images img:first-child { margin-top: 0; }
-    .cantina-image::after { display: none; }
-    .info-grid { grid-template-columns: 1fr; gap: 2rem; }
-    section { padding: 4rem 1.5rem; }
-    .form-row { grid-template-columns: 1fr; }
-    .footer-inner { flex-direction: column; text-align: center; }
-    #cookie-banner { flex-direction: column; align-items: flex-start; }
-    .cookie-actions { width: 100%; }
-    .cookie-btn { flex: 1; text-align: center; }
-  }
+:root{--red:#E63946;--red-light:rgba(230,57,70,0.18);--red-dark:#ff6b6b;--green:#2ecc71;--green-light:rgba(46,204,113,0.15);--amber:#f39c12;--amber-light:rgba(243,156,18,0.15);--blue:#4a9eff;--blue-light:rgba(74,158,255,0.15);--bg:#0a0a0a;--card:#141414;--card2:#1c1c1c;--text:#f0f0f0;--muted:#888;--border:#2a2a2a;--radius:14px;--radius-sm:8px}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text);min-height:100vh}
+.hidden{display:none!important}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,0.35);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+.auth-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px}
+.auth-logo{display:flex;align-items:center;gap:12px;margin-bottom:32px}
+.auth-logo-icon{width:48px;height:48px;border-radius:14px;background:var(--red);display:flex;align-items:center;justify-content:center}
+.auth-logo-icon svg{width:26px;height:26px;}
+.auth-logo-text{font-size:24px;font-weight:600;letter-spacing:-.5px}
+.auth-card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:28px 24px;width:100%;max-width:400px;animation:fadeIn .25s ease}
+.auth-title{font-size:18px;font-weight:600;margin-bottom:6px}
+.auth-sub{font-size:13px;color:var(--muted);margin-bottom:22px;line-height:1.6}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.field input,.field textarea{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:15px;background:var(--card2);color:var(--text);font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s}
+.field input.mono{font-family:'DM Mono',monospace;font-size:13px}
+.field input:focus,.field textarea:focus{border-color:var(--red)}
+.btn-primary{width:100%;padding:14px;background:var(--red);color:white;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s}
+.btn-primary:hover{background:var(--red-dark)}
+.btn-primary:active{transform:scale(.98)}
+.btn-primary:disabled{background:#ccc;cursor:default}
+.btn-ghost{background:none;border:none;font-size:13px;color:var(--blue);cursor:pointer;font-family:'DM Sans',sans-serif;padding:0}
+.btn-ghost:hover{text-decoration:underline}
+.auth-switch{text-align:center;margin-top:18px;font-size:13px;color:var(--muted)}
+.msg{border-radius:var(--radius-sm);padding:11px 14px;font-size:13px;margin-bottom:14px;display:none}
+.msg.show{display:block}
+.msg-err{background:rgba(230,57,70,0.15);border:1px solid rgba(230,57,70,0.4);color:#ff6b6b}
+.msg-ok{background:rgba(46,204,113,0.15);border:1px solid rgba(46,204,113,0.4);color:#2ecc71}
+.plan-box{border:1.5px solid var(--border);background:var(--card2);border-radius:var(--radius);padding:20px;margin-bottom:20px;text-align:center}
+.plan-price{font-size:38px;font-weight:600;letter-spacing:-1px}
+.plan-price span{font-size:16px;font-weight:400;color:var(--muted)}
+.plan-name{font-size:13px;color:var(--muted);margin-top:2px}
+.plan-feats{margin-top:14px;text-align:left}
+.plan-feat{font-size:13px;padding:5px 0;border-bottom:.5px solid var(--border);display:flex;align-items:center;gap:8px}
+.plan-feat:last-child{border:none}
+.feat-ok{color:var(--green);font-weight:700}
+.stripe-note{font-size:11px;color:var(--muted);text-align:center;margin-top:10px}
+.btn-outline{width:100%;padding:12px;background:none;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--text);margin-top:10px}
+.btn-outline:hover{border-color:var(--muted)}
+header{position:sticky;top:0;z-index:100;background:var(--card);border-bottom:1px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center}
+.header-inner{max-width:480px;margin:0 auto;display:flex;align-items:center;justify-content:center;width:100%;height:100%}
+.logo{display:flex;align-items:center;justify-content:center;gap:6px}
+.logo-icon{width:38px;height:38px;border-radius:9px;background:var(--red);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.logo-icon svg{width:38px;height:38px;}
+.logo-text{font-size:17px;font-weight:600;letter-spacing:-.3px}
+.logo-rist{font-size:11px;color:var(--muted);margin-top:1px}
+.btn-logout{background:none;border:none;font-size:12px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;padding:6px 10px;border-radius:6px}
+.btn-logout:hover{background:var(--bg);color:var(--text)}
+.tabs{max-width:480px;margin:0 auto;display:flex;flex-direction:row;background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:99;padding:4px 8px;gap:2px}
+.tab{padding:8px 6px;text-align:center;font-size:10px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:none;transition:all .15s;user-select:none;white-space:nowrap;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:12px;flex:1}
+.tab.active{color:var(--red);background:rgba(230,57,70,0.12)}
+.tab.active{color:var(--red);border-bottom-color:var(--red)}
+.tab-icon{display:flex;align-items:center;color:inherit}
+main{max-width:480px;margin:0 auto;padding:20px 16px 100px;min-height:100vh}
+.page{display:none}
+.page.active{display:block}
+.search-box{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:20px;margin-bottom:16px}
+.section-label{font-size:11px;color:var(--muted);margin-bottom:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.input-row{display:flex;gap:8px}
+.phone-input{flex:1;padding:13px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:16px;font-family:'DM Mono',monospace;background:var(--bg);color:var(--text);outline:none;transition:border-color .15s}
+.phone-input:focus{border-color:var(--red)}
+.btn-search{padding:13px 20px;background:var(--red);color:white;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif}
+.btn-search:active{transform:scale(.97)}
+.result-box{border-radius:var(--radius);padding:18px;margin-top:4px;animation:fadeIn .2s ease}
+.result-danger{background:var(--red-light);border:1.5px solid rgba(230,57,70,0.4)}
+.result-ok{background:var(--green-light);border:1.5px solid rgba(46,204,113,0.4)}
+.result-title{font-size:16px;font-weight:600;margin-bottom:6px}
+.result-danger .result-title{color:#ff6b6b}
+.result-ok .result-title{color:#2ecc71}
+.result-meta{font-size:13px;line-height:1.6}
+.result-danger .result-meta{color:#ffaaaa}
+.result-ok .result-meta{color:#7be0a8}
+.seg-list{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.seg-item{background:rgba(230,57,70,0.1);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:#ffaaaa}
+.seg-item strong{display:block;font-weight:600;margin-bottom:2px}
+.form-card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:20px;margin-bottom:16px}
+.form-title{font-size:15px;font-weight:600;margin-bottom:16px}
+.btn-submit{width:100%;padding:14px;background:var(--red);color:white;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-submit:hover{background:var(--red-dark)}
+.btn-submit:disabled{background:#ccc;cursor:default}
+.toast{display:none;align-items:center;justify-content:center;gap:8px;border-radius:var(--radius-sm);padding:12px 14px;font-size:14px;font-weight:500;margin-top:12px}
+.toast.show{display:flex}
+.toast-ok{text-align:center;background:rgba(46,204,113,0.15);border:1px solid rgba(46,204,113,0.4);color:#2ecc71}
+.toast-err{background:rgba(230,57,70,0.15);border:1px solid rgba(230,57,70,0.4);color:#ff6b6b}
+.feed-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.feed-title{font-size:15px;font-weight:600}
+.count-badge{background:var(--red-light);color:var(--red-dark);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px}
+.feed-item{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:16px;margin-bottom:10px;display:flex;gap:12px;animation:fadeIn .2s}
+.feed-dot{width:34px;height:34px;border-radius:50%;background:rgba(230,57,70,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px}
+.feed-body{flex:1;min-width:0}
+.feed-phone{font-family:'DM Mono',monospace;font-size:14px;font-weight:500}
+.feed-name{font-size:13px;color:var(--muted);margin-top:1px}
+.feed-note{font-size:13px;margin-top:5px;line-height:1.5}
+.feed-date{font-size:11px;color:var(--muted);margin-top:4px}
+.feed-rist{font-size:11px;color:var(--muted)}
+.loading{text-align:center;padding:40px 0;color:var(--muted);font-size:14px}
+.empty-state{text-align:center;padding:48px 0;color:var(--muted)}
+.empty-state .ei{font-size:40px;margin-bottom:10px}
+.cauzione-form{background:var(--card2);border:1px solid rgba(230,57,70,0.3);border-radius:var(--radius);padding:18px;margin-top:12px;animation:fadeIn .2s}
+.cauzione-form .form-title{color:#ff6b6b;font-size:14px;margin-bottom:14px}
+.cauzione-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.cauzione-total{background:rgba(230,57,70,0.1);border-radius:var(--radius-sm);padding:10px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.cauzione-total-label{font-size:12px;color:var(--muted)}
+.cauzione-total-amt{font-size:20px;font-weight:700;color:#ff6b6b;font-family:'DM Mono',monospace}
+.btn-whatsapp{width:100%;padding:13px;background:#25D366;color:white;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px}
+.btn-copy-link{width:100%;padding:11px;background:none;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--text)}
+.cauzioni-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;animation:fadeIn .2s}
+.cauzioni-status{font-size:11px;font-weight:600;padding:3px 8px;border-radius:10px}
+.s-attesa{background:rgba(243,156,18,0.15);color:#f39c12}
+.s-pagata{background:rgba(46,204,113,0.15);color:#2ecc71}
+.s-usata{background:rgba(74,158,255,0.15);color:#4a9eff}
+.s-trattenuta{background:rgba(230,57,70,0.15);color:#ff6b6b}
+.admin-section{margin-bottom:24px}
+.admin-section h2{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+.invite-row{display:flex;gap:8px}
+.invite-input{flex:1;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:'DM Mono',monospace;background:var(--bg);color:var(--text);outline:none}
+.btn-gen{padding:11px 16px;background:#4a9eff;color:white;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif}
+.btn-copy{padding:11px 14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;position:relative;overflow:hidden;min-width:40px;transition:min-width .2s ease,padding .2s ease}.btn-copy .copy-label{display:none;margin-left:5px;font-size:12px;white-space:nowrap;color:var(--text)}.btn-copy:hover .copy-label{display:inline}.btn-copy:hover{min-width:80px;background:var(--card2);border-color:var(--muted)}
+.user-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:13px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.user-name{font-size:14px;font-weight:500}
+.user-email{font-size:12px;color:var(--muted)}
+.status-pill{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px}
+.s-active{background:rgba(46,204,113,0.15);color:#2ecc71}
+.s-inactive{background:rgba(230,57,70,0.15);color:#ff6b6b}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;align-items:center;justify-content:center;padding:20px}
+.modal-bg.show{display:flex}
+.modal{background:var(--card);border-radius:var(--radius);padding:26px;width:100%;max-width:440px;animation:fadeIn .2s;max-height:90vh;overflow-y:auto}
+.modal h2{font-size:17px;font-weight:600;margin-bottom:6px}
+.modal-p{font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6}
+.modal .field input{background:var(--bg);font-size:13px}
+.btn-save{width:100%;padding:13px;background:var(--red);color:white;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:14px}
+.step{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;font-size:13px;color:var(--muted);line-height:1.5}
+.step-num{background:var(--red);color:white;border-radius:50%;width:20px;height:20px;min-width:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-top:1px}
+pre{background:#1a1a1a;color:#e0e0e0;border-radius:8px;padding:12px;font-size:11px;overflow-x:auto;margin-top:8px;line-height:1.6;white-space:pre-wrap;word-break:break-all}
+details summary{font-size:13px;font-weight:500;cursor:pointer;color:var(--muted)}
+details{margin-bottom:14px}
 </style>
 </head>
 <body>
 
-<nav id="main-nav">
-  <a href="#" class="nav-logo">Santamonica <span class="sub">sul mare</span></a>
-  <ul class="nav-links">
-    <li><a href="#cucina">Cucina</a></li>
-    <li><a href="#cantina">Cantina</a></li>
-    <li><a href="#info">Info</a></li>
-    <li><a href="#contatti">Contatti</a></li>
-  </ul>
-  <a href="https://widget.thefork.com/2a3a7eb3-cf6b-4252-8451-c68ffd53d4df" target="_blank" class="nav-cta">Prenota</a>
-  <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
-</nav>
+<!-- SETUP MODAL -->
+<div class="modal-bg" id="setupModal">
+  <div class="modal">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px"><svg width="36" height="36" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0"><rect width="120" height="120" rx="20" fill="#E63946"/><path d="M60 8 L104 26 L104 62 Q104 88 60 112 Q16 88 16 62 L16 26 Z" fill="white" opacity="0.15"/><path d="M60 8 L104 26 L104 62 Q104 88 60 112 Q16 88 16 62 L16 26 Z" fill="none" stroke="white" stroke-width="3"/><g fill="white"><rect x="48" y="28" width="3.5" height="20" rx="1.5"/><rect x="53.5" y="28" width="3.5" height="20" rx="1.5"/><rect x="59" y="28" width="3.5" height="20" rx="1.5"/><path d="M48 44 Q48 52 51.75 54 Q55.5 52 55.5 44 Z"/><rect x="50" y="54" width="3.5" height="24" rx="1.75"/></g><g fill="white"><path d="M69 28 Q78 28 79 40 L69 44 Z"/><rect x="68" y="44" width="3.5" height="34" rx="1.75"/></g></svg><span style="font-size:18px;font-weight:600;letter-spacing:-0.3px;">NoShowApp</span></div>
+    <h2 style="font-size:15px;color:var(--muted);font-weight:500;margin-bottom:6px">Configurazione iniziale</h2>
+    <p class="modal-p">Inserisci le credenziali per attivare autenticazione e pagamenti.</p>
+    <details>
+      <summary>Istruzioni Supabase ▾</summary>
+      <div style="margin-top:10px">
+        <div class="step"><div class="step-num">1</div><span>Crea progetto su <strong>supabase.com</strong></span></div>
+        <div class="step"><div class="step-num">2</div><span>Esegui questa SQL nell'editor del progetto</span></div>
+        <div class="step"><div class="step-num">3</div><span>Copia URL e chiave <code style="font-family:monospace;background:#f0ede8;padding:1px 5px;border-radius:3px">anon public</code> dalle impostazioni API</span></div>
+      </div>
+      <pre>-- Profili
+CREATE TABLE profiles (
+  id uuid REFERENCES auth.users PRIMARY KEY,
+  ristorante text NOT NULL,
+  role text DEFAULT 'user',
+  subscription_status text DEFAULT 'inactive',
+  stripe_customer_id text,
+  created_at timestamptz DEFAULT now()
+);
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "own" ON profiles FOR ALL USING (auth.uid()=id);
+CREATE POLICY "admin_all" ON profiles FOR ALL USING (
+  EXISTS(SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));
 
-<div class="mobile-menu" id="mobile-menu">
-  <button class="menu-close" id="menu-close">&#x2715;</button>
-  <a href="#cucina" class="mobile-link">Cucina</a>
-  <a href="#cantina" class="mobile-link">Cantina</a>
-  <a href="#info" class="mobile-link">Info &amp; Orari</a>
-  <a href="#contatti" class="mobile-link">Contatti</a>
-  <a href="https://widget.thefork.com/2a3a7eb3-cf6b-4252-8451-c68ffd53d4df" target="_blank" style="font-family:'Jost',sans-serif;font-size:0.72rem;letter-spacing:0.2em;text-transform:uppercase;font-style:normal;background:var(--ink);color:var(--warm-white);padding:0.9rem 2.5rem;margin-top:1rem;">Prenota</a>
+-- Codici invito
+CREATE TABLE invite_codes (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  code text UNIQUE NOT NULL,
+  used boolean DEFAULT false,
+  used_by uuid,
+  created_at timestamptz DEFAULT now()
+);
+ALTER TABLE invite_codes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "public_check" ON invite_codes FOR SELECT USING (true);
+CREATE POLICY "admin_manage" ON invite_codes FOR ALL USING (
+  EXISTS(SELECT 1 FROM profiles WHERE id=auth.uid() AND role='admin'));
+
+-- No-show
+CREATE TABLE noshow (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  phone text NOT NULL,
+  name text,
+  date date,
+  note text,
+  ristorante text,
+  user_id uuid REFERENCES auth.users,
+  created_at timestamptz DEFAULT now()
+);
+ALTER TABLE noshow ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "active_read" ON noshow FOR SELECT USING (
+  EXISTS(SELECT 1 FROM profiles WHERE id=auth.uid() AND subscription_status='active'));
+CREATE POLICY "active_insert" ON noshow FOR INSERT WITH CHECK (
+  EXISTS(SELECT 1 FROM profiles WHERE id=auth.uid() AND subscription_status='active'));</pre>
+    </details>
+    <details>
+      <summary>Istruzioni Stripe ▾</summary>
+      <div style="margin-top:10px">
+        <div class="step"><div class="step-num">1</div><span>Crea account su <strong>stripe.com</strong></span></div>
+        <div class="step"><div class="step-num">2</div><span>Crea un prodotto con prezzo mensile ricorrente</span></div>
+        <div class="step"><div class="step-num">3</div><span>Crea un <strong>Payment Link</strong> per quel prodotto</span></div>
+        <div class="step"><div class="step-num">4</div><span>Copia la Publishable Key e il Payment Link URL</span></div>
+        <div class="step"><div class="step-num">5</div><span>Configura webhook Stripe per aggiornare <code style="font-family:monospace;background:#f0ede8;padding:1px 4px;border-radius:3px">subscription_status='active'</code> nel profilo dopo il pagamento</span></div>
+      </div>
+    </details>
+    <div class="field"><label>Supabase URL</label><input id="cfgUrl" type="url" placeholder="https://xxxx.supabase.co" class="mono"/></div>
+    <div class="field"><label>Supabase Anon Key</label><input id="cfgKey" type="text" placeholder="eyJhbGci..." class="mono"/></div>
+    <div class="field"><label>Stripe Payment Link URL</label><input id="cfgStripeLink" type="url" placeholder="https://buy.stripe.com/..." class="mono"/></div>
+    <div class="field"><label>Prezzo mensile (solo numero, es: 19)</label><input id="cfgPriceAmt" type="number" placeholder="19"/></div>
+    <div class="field"><label>Tua email (diventerai admin)</label><input id="cfgAdmin" type="email" placeholder="tu@email.com"/></div>
+    <button class="btn-save" onclick="salvaConfig()">Salva e avvia</button>
+  </div>
 </div>
 
-<section class="hero" style="padding:0;position:relative;">
-  <div class="hero-text-panel">
-    <p class="hero-eyebrow">Ristorante &middot; Genova</p>
-    <h1 class="hero-title">Cucina <em>viva</em><br>sul mare</h1>
-    <p class="hero-desc">Un progetto in costante divenire, basato sull&rsquo;attenzione al gusto e sulla qualit&agrave; della materia prima. Pesce di Camogli, verdure dell&rsquo;orto genovese, pasta e pane di nostra produzione.</p>
-    <div class="hero-actions">
-      <a href="https://widget.thefork.com/2a3a7eb3-cf6b-4252-8451-c68ffd53d4df" target="_blank" class="btn-primary">Prenota un tavolo</a>
-      <a href="#cucina" class="btn-secondary">Scopri il menu</a>
+<!-- AUTH SCREENS -->
+<div id="authWrap">
+  <!-- LOGIN -->
+  <div class="auth-wrap" id="screenLogin">
+    <div class="auth-logo">
+      <div class="auth-logo-icon"><svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><path d="M60 8 L104 26 L104 62 Q104 88 60 112 Q16 88 16 62 L16 26 Z" fill="white" opacity="0.15"/><path d="M60 8 L104 26 L104 62 Q104 88 60 112 Q16 88 16 62 L16 26 Z" fill="none" stroke="white" stroke-width="3"/><g fill="white"><rect x="48" y="28" width="3.5" height="20" rx="1.5"/><rect x="53.5" y="28" width="3.5" height="20" rx="1.5"/><rect x="59" y="28" width="3.5" height="20" rx="1.5"/><path d="M48 44 Q48 52 51.75 54 Q55.5 52 55.5 44 Z"/><rect x="50" y="54" width="3.5" height="24" rx="1.75"/></g><g fill="white"><path d="M69 28 Q78 28 79 40 L69 44 Z"/><rect x="68" y="44" width="3.5" height="34" rx="1.75"/></g></svg></div>
+      <div class="auth-logo-text">NoShowApp</div>
     </div>
-    <div class="hero-scroll-indicator">Scorri</div>
-  </div>
-  <div class="hero-image-panel">
-    <img src="https://static.wixstatic.com/media/461837_f0bd06030a2e4549aa5125dfe974a199~mv2.jpg" alt="Santamonica ristorante Genova" loading="eager">
-  </div>
-</section>
-
-<section id="cucina">
-  <div class="section-inner">
-    <div class="cucina-grid">
-      <div class="reveal">
-        <p class="section-label">La nostra proposta</p>
-        <h2 class="section-title">Cucina <em>del territorio</em></h2>
-        <div class="cucina-body">
-          <p>La qualit&agrave; della materia prima &egrave; fondamentale: ci rivolgiamo quanto pi&ugrave; possibile a pescatori e produttori locali. Il pesce arriva da Camogli, le verdure da un piccolo orto sulle alture di Genova.</p>
-          <p>I nostri piatti sono elaborati ma allo stesso tempo semplici, per valorizzare al meglio i prodotti della Liguria. Pasta fresca, pane, focaccia e dolci sono tutti di nostra produzione.</p>
-          <p>Una cucina elegante, in cui anche l&rsquo;estetica e il piatto fisico hanno la loro importanza &mdash; partendo dalla tradizione per diventare contemporanei.</p>
-        </div>
-        <div class="cucina-actions">
-          <a href="https://af88bf37-3bfb-460d-a80e-2a0f7ca776ba.filesusr.com/ugd/461837_d635715c48a04d4c96aa2f5de3ce6530.pdf" target="_blank" class="btn-primary">Guarda il men&ugrave;</a>
-        </div>
-      </div>
-      <div class="cucina-images reveal" style="transition-delay:0.15s">
-        <img src="https://static.wixstatic.com/media/461837_166ee198f58246e68b5dba24fc9b68ef~mv2.jpg" alt="Cucina Santamonica">
-        <img src="https://static.wixstatic.com/media/461837_d7446c2748b64bd4acdb089d7c65bf7d~mv2.jpg" alt="Ingredienti freschi">
-      </div>
+    <div class="auth-card">
+      <div class="auth-title">Accedi</div>
+      <div class="auth-sub">Piattaforma riservata ai ristoratori iscritti.</div>
+      <div class="msg msg-err" id="loginErr"></div>
+      <div class="field"><label>Email</label><input id="loginEmail" type="email" placeholder="tu@email.com" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <div class="field"><label>Password</label><input id="loginPwd" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <button class="btn-primary" id="btnLogin" onclick="doLogin()">Accedi</button>
+      <div class="auth-switch">Non hai un account? <button class="btn-ghost" onclick="showScreen('screenRegister')">Registrati con codice invito</button></div>
     </div>
   </div>
-</section>
 
-<!-- GALLERIA -->
-<section class="galleria-section" id="galleria">
-  <div class="section-inner">
-    <p class="section-label reveal">La nostra cucina</p>
-    <h2 class="section-title reveal">Ogni piatto,<br><em>una storia</em></h2>
-    <div class="galleria-grid">
-      <div class="galleria-item grande reveal" onclick="openLightbox(0)">
-        <img src="img/piatto-pesce.jpg" alt="Pesce alla griglia con salsa e verdure">
-      </div>
-      <div class="galleria-item reveal" onclick="openLightbox(1)" style="transition-delay:0.1s">
-        <img src="img/piatto-tonno.jpg" alt="Tonno scottato con salse">
-      </div>
-      <div class="galleria-item reveal" onclick="openLightbox(2)" style="transition-delay:0.15s">
-        <img src="img/piatto-pasta.jpg" alt="Pasta fresca fatta in casa">
-      </div>
-      <div class="galleria-item reveal" onclick="openLightbox(3)" style="transition-delay:0.2s">
-        <img src="img/piatto-carne.jpg" alt="Secondo con salsa ricca">
-      </div>
-      <div class="galleria-item grande reveal" onclick="openLightbox(4)" style="transition-delay:0.25s">
-        <img src="img/piatto-dessert.jpg" alt="Dessert con frutti di bosco e salsa">
-      </div>
+  <!-- REGISTER -->
+  <div class="auth-wrap hidden" id="screenRegister">
+    <div class="auth-logo">
+      <div class="auth-logo-icon"><svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><path d="M60 8 L104 26 L104 62 Q104 88 60 112 Q16 88 16 62 L16 26 Z" fill="white" opacity="0.15"/><path d="M60 8 L104 26 L104 62 Q104 88 60 112 Q16 88 16 62 L16 26 Z" fill="none" stroke="white" stroke-width="3"/><g fill="white"><rect x="48" y="28" width="3.5" height="20" rx="1.5"/><rect x="53.5" y="28" width="3.5" height="20" rx="1.5"/><rect x="59" y="28" width="3.5" height="20" rx="1.5"/><path d="M48 44 Q48 52 51.75 54 Q55.5 52 55.5 44 Z"/><rect x="50" y="54" width="3.5" height="24" rx="1.75"/></g><g fill="white"><path d="M69 28 Q78 28 79 40 L69 44 Z"/><rect x="68" y="44" width="3.5" height="34" rx="1.75"/></g></svg></div>
+      <div class="auth-logo-text">NoShowApp</div>
     </div>
-  </div>
-</section>
-
-<!-- LIGHTBOX -->
-<div id="lightbox">
-  <button id="lightbox-close" onclick="closeLightbox()">&#x2715;</button>
-  <button id="lightbox-prev" onclick="changeLightbox(-1)">&#x2039;</button>
-  <img id="lightbox-img" src="" alt="">
-  <button id="lightbox-next" onclick="changeLightbox(1)">&#x203a;</button>
+    <div class="auth-card">
+      <div class="auth-title">Crea account</div>
+      <div class="auth-sub">Inserisci il codice invito ricevuto per registrarti.</div>
+      <div class="msg msg-err" id="regErr"></div>
+      <div class="msg msg-ok" id="regOk"></div>
+      <div class="field"><label>Codice invito</label><input id="regCode" type="text" placeholder="NS-XXXX-XXXX" class="mono" style="text-transform:uppercase" onkeydown="if(event.key==='Enter')doRegister()"/></div>
+      <div class="field"><label>Nome ristorante *</label><input id="regRist" type="text" placeholder="Es: Trattoria da Mario" onkeydown="if(event.key==='Enter')doRegister()"/></div>
+      <div class="field"><label>Email</label><input id="regEmail" type="email" placeholder="tu@email.com" onkeydown="if(event.key==='Enter')doRegister()"/></div>
+      <div class="field"><label>Password</label><input id="regPwd" type="password" placeholder="Min. 8 caratteri" onkeydown="if(event.key==='Enter')doRegister()"/></div>
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:14px;padding:12px;background:rgba(255,255,255,0.04);border-radius:8px;border:0.5px solid var(--border)">
+  <input type="checkbox" id="privacyCheck" style="margin-top:3px;flex-shrink:0;accent-color:var(--red);width:16px;height:16px;cursor:pointer"/>
+  <label for="privacyCheck" style="font-size:12px;color:var(--muted);line-height:1.6;cursor:pointer">
+    Ho letto e accetto l'<a href="https://noshowapp.it/privacy.html" target="_blank" style="color:var(--blue);text-decoration:none">Informativa Privacy</a> e acconsento al trattamento dei miei dati personali ai sensi del GDPR per l'utilizzo della piattaforma NoShowApp.
+  </label>
 </div>
-
-<div class="quote-section">
-  <p class="quote-text">&ldquo;Be nice to people. We&rsquo;re all trying our best.&rdquo;</p>
-  <p class="quote-attr">&mdash; Monica &amp; Andrea</p>
-</div>
-
-<section id="cantina">
-  <div class="section-inner">
-    <div class="cantina-grid">
-      <div class="cantina-image reveal">
-        <img src="https://static.wixstatic.com/media/461837_b23457903272448a817a539cb9aadc62~mv2.jpeg" alt="Cantina vini Santamonica">
-      </div>
-      <div class="reveal" style="transition-delay:0.15s">
-        <p class="section-label">I nostri vini</p>
-        <h2 class="section-title">Una <em>cantina</em> ligure</h2>
-        <div class="cucina-body">
-          <p>Monica, sommelier esperta e appassionata, cura personalmente la carta dei vini. In una ricca proposta di etichette italiane spicca la vasta selezione di bottiglie liguri &mdash; abbinamento perfetto al pesce del nostro mare.</p>
-          <p>La crescente richiesta di vini naturali porta il Santamonica a interfacciarsi sempre pi&ugrave; con produttori che lavorano l&rsquo;uva il meno possibile. Un&rsquo;ampia scelta &egrave; disponibile anche a calice.</p>
-        </div>
-        <div class="cucina-actions">
-          <a href="https://af88bf37-3bfb-460d-a80e-2a0f7ca776ba.filesusr.com/ugd/461837_66faa32523f248c7982f03a1ccef5164.pdf" target="_blank" class="btn-secondary">Carta dei vini</a>
-        </div>
-      </div>
+<button class="btn-primary" id="btnReg" onclick="doRegister()">Crea account</button>
+      <div class="auth-switch">Hai già un account? <button class="btn-ghost" onclick="showScreen('screenLogin')">Accedi</button></div>
     </div>
   </div>
-</section>
 
-<section class="regalo-section">
-  <div class="section-inner">
-    <div class="regalo-inner reveal">
-      <p class="section-label">Un dono speciale</p>
-      <h2 class="section-title">Buoni <em>regalo</em></h2>
-      <p class="regalo-body">Regala un pranzo o una cena al Santamonica. I Buoni Regalo sono utilizzabili tutti i giorni (salvo disponibilit&agrave;) escluso Sabato e festivi, con validit&agrave; di 6 mesi dall&rsquo;acquisto. Contattaci per acquistarlo.</p>
-      <a href="/cdn-cgi/l/email-protection#91e2f0ffe5f0fcfefff8f2f0f6f4fffee7f0d1f6fcf0f8fdbff2fefcaee2e4f3fbf4f2e5acd3e4fefffeb1c3f4f6f0fdfeb1c2f0ffe5f0fcfefff8f2f0" class="btn-primary">Richiedi un buono</a>
+  <!-- PAYWALL -->
+  <div class="auth-wrap hidden" id="screenPaywall">
+    <div class="auth-logo">
+      <div class="auth-logo-icon"><svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><path d="M60 8 L104 26 L104 62 Q104 88 60 112 Q16 88 16 62 L16 26 Z" fill="white" opacity="0.15"/><path d="M60 8 L104 26 L104 62 Q104 88 60 112 Q16 88 16 62 L16 26 Z" fill="none" stroke="white" stroke-width="3"/><g fill="white"><rect x="48" y="28" width="3.5" height="20" rx="1.5"/><rect x="53.5" y="28" width="3.5" height="20" rx="1.5"/><rect x="59" y="28" width="3.5" height="20" rx="1.5"/><path d="M48 44 Q48 52 51.75 54 Q55.5 52 55.5 44 Z"/><rect x="50" y="54" width="3.5" height="24" rx="1.75"/></g><g fill="white"><path d="M69 28 Q78 28 79 40 L69 44 Z"/><rect x="68" y="44" width="3.5" height="34" rx="1.75"/></g></svg></div>
+      <div class="auth-logo-text">NoShowApp</div>
+    </div>
+    <div class="auth-card" style="text-align:center">
+      <div style="font-size:52px;margin-bottom:16px">🎉</div>
+      <div class="auth-title">Benvenuto in NoShowApp!</div>
+      <div class="auth-sub">Sei tra i primi ristoratori ad accedere alla piattaforma in versione beta.</div>
+      <div style="background:rgba(46,204,113,0.12);border:1px solid rgba(46,204,113,0.3);border-radius:12px;padding:20px;margin-bottom:20px;text-align:left">
+        <div style="font-size:13px;font-weight:600;color:#2ecc71;margin-bottom:10px">✓ Accesso beta gratuito</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.7">Il tuo account è stato creato con successo.<br>Durante la fase di test <strong style="color:var(--text)">l'accesso viene attivato automaticamente</strong>.<br>Clicca il pulsante qui sotto per entrare subito.</div>
+      </div>
+      <div style="background:var(--card2);border-radius:10px;padding:14px;margin-bottom:20px;text-align:left">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;font-weight:600">Cosa include l'accesso beta</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.9">🔍 Ricerca numeri in tempo reale<br>⚠️ Segnalazione no-show<br>📋 Storico condiviso tra ristoratori<br>🆓 Completamente gratuito durante la beta</div>
+      </div>
+      <button class="btn-outline" onclick="checkSub()" style="font-size:13px;margin-bottom:8px">Sono già stato attivato — Entra</button>
+      <button class="btn-outline" onclick="doLogout()" style="font-size:13px;color:var(--muted)">Esci dall'account</button>
     </div>
   </div>
-</section>
 
-<section id="info">
-  <div class="section-inner">
-    <p class="section-label reveal">Come raggiungerci</p>
-    <h2 class="section-title reveal">Orari &amp; <em>Contatti</em></h2>
-    <div class="info-grid reveal" style="transition-delay:0.1s">
-      <div>
-        <p class="info-block-label">Orari</p>
-        <div class="info-block-content">
-          Marted&igrave;<br>
-          <strong style="color:var(--ink);font-weight:400">19:30 &ndash; 22:30</strong><br><br>
-          Mercoled&igrave; &ndash; Sabato<br>
-          <strong style="color:var(--ink);font-weight:400">12:30 &ndash; 14:30 &nbsp;/&nbsp; 19:30 &ndash; 22:30</strong><br><br>
-          Domenica<br>
-          <strong style="color:var(--ink);font-weight:400">12:30 &ndash; 14:30</strong><br><br>
-          <em style="font-size:0.78rem">Luned&igrave; chiuso</em>
-        </div>
-      </div>
-      <div>
-        <p class="info-block-label">Dove siamo</p>
-        <div class="info-block-content">
-          Lungomare Lombardo 27<br>16145 Genova &mdash; Italy<br><br>
-          <a href="tel:+390105533155">+39 010 553 31 55</a><br>
-          <a href="/cdn-cgi/l/email-protection#2251434c56434f4d4c4b414345474c4d544362454f434b4e0c414d4f"><span class="__cf_email__" data-cfemail="7b081a150f1a16141512181a1c1e15140d1a3b1c161a121755181416">[email&#160;protected]</span></a>
-        </div>
-      </div>
-      <div>
-        <p class="info-block-label">Note</p>
-        <div class="info-block-content">
-          Si prega di segnalare eventuali allergie o intolleranze al momento della prenotazione.<br><br>
-          &#x1F43E; Accettiamo animali di tutte le taglie.
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="contatti" style="background:var(--sand);">
-  <div class="section-inner">
-    <div class="contatti-grid">
-      <div class="reveal">
-        <p class="section-label">Scrivici</p>
-        <h2 class="section-title">Manda un <em>messaggio</em></h2>
-        <form id="contact-form" action="https://formspree.io/f/mkopjnvq" method="POST">
-          <div class="form-row">
-            <div class="form-group">
-              <label for="nome">Nome</label>
-              <input type="text" id="nome" name="nome" placeholder="Mario" required>
-            </div>
-            <div class="form-group">
-              <label for="cognome">Cognome</label>
-              <input type="text" id="cognome" name="cognome" placeholder="Rossi" required>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="email">Email</label>
-              <input type="email" id="email" name="email" placeholder="mario@email.com" required>
-            </div>
-            <div class="form-group">
-              <label for="tel">Telefono</label>
-              <input type="tel" id="tel" name="telefono" placeholder="+39 000 0000000">
-            </div>
-          </div>
-          <div class="form-group">
-            <label for="msg">Messaggio</label>
-            <textarea id="msg" name="messaggio" placeholder="Come possiamo aiutarti?" required></textarea>
-          </div>
-          <div class="form-check">
-            <input type="checkbox" id="privacy" required>
-            <label for="privacy">Accetto la <a href="/privacy-policy">Privacy Policy</a> e i <a href="/cookies">Cookie</a></label>
-          </div>
-          <button type="submit" id="submit-btn" class="btn-primary" style="cursor:pointer;font-family:'Jost',sans-serif;border:none;">Invia messaggio</button>
-          <div class="form-status" id="form-status"></div>
-        </form>
-      </div>
-      <div class="reveal" style="transition-delay:0.15s">
-        <div class="map-wrapper">
-          <iframe
-            src="https://www.openstreetmap.org/export/embed.html?bbox=8.960702%2C44.387346%2C8.968702%2C44.395346&layer=mapnik&marker=44.391346%2C8.964702"
-            height="380"
-            allowfullscreen
-            loading="lazy"
-            title="Mappa Santamonica Genova">
-          </iframe>
-          <div class="map-bar">
-            <div class="map-bar-address">
-              <span class="map-bar-label">Santamonica</span>
-              Lungomare Lombardo 27 &mdash; Genova
-            </div>
-            <a href="https://www.openstreetmap.org/?mlat=44.391346&mlon=8.964702#map=17/44.391346/8.964702" target="_blank" class="map-bar-link">Apri in Maps &rarr;</a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<footer>
-  <div class="footer-inner">
-    <a href="#" class="footer-logo">Santamonica</a>
-    <div class="footer-social">
-      <a href="https://www.instagram.com/santamonicaristorante/" target="_blank">Instagram</a>
-      <a href="https://www.facebook.com/santamonicage" target="_blank">Facebook</a>
-    </div>
-    <p class="footer-copy">&copy; 2026 Il Giuliano di Andrea Giachino e C sas</p>
-  </div>
-</footer>
-
-<!-- POPUP PRENOTAZIONE -->
-<div id="booking-overlay" role="dialog" aria-modal="true" aria-label="Prenota un tavolo">
-  <div id="booking-popup">
-    <button class="popup-close" id="popup-close" aria-label="Chiudi">&#x2715;</button>
-    <span class="popup-label">Prenota ora</span>
-    <h2>Un tavolo <em>sul mare</em></h2>
-    <p>Siamo aperti dal marted&igrave; alla domenica. Prenota il tuo tavolo e vivi un&rsquo;esperienza di cucina ligure autentica.</p>
-    <div class="popup-actions">
-      <a href="https://widget.thefork.com/2a3a7eb3-cf6b-4252-8451-c68ffd53d4df" target="_blank" class="btn-primary" style="text-align:center;" onclick="closePopup()">Prenota su TheFork</a>
-      <button class="popup-skip" id="popup-skip">Magari un&rsquo;altra volta</button>
+  <!-- PENDING -->
+  <div class="auth-wrap hidden" id="screenPending">
+    <div class="auth-card" style="text-align:center">
+      <div style="display:flex;justify-content:center;margin-bottom:16px"><svg width="36" height="36" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0"><rect width="120" height="120" rx="20" fill="#E63946"/><path d="M60 8 L104 26 L104 62 Q104 88 60 112 Q16 88 16 62 L16 26 Z" fill="white" opacity="0.15"/><path d="M60 8 L104 26 L104 62 Q104 88 60 112 Q16 88 16 62 L16 26 Z" fill="none" stroke="white" stroke-width="3"/><g fill="white"><rect x="48" y="28" width="3.5" height="20" rx="1.5"/><rect x="53.5" y="28" width="3.5" height="20" rx="1.5"/><rect x="59" y="28" width="3.5" height="20" rx="1.5"/><path d="M48 44 Q48 52 51.75 54 Q55.5 52 55.5 44 Z"/><rect x="50" y="54" width="3.5" height="24" rx="1.75"/></g><g fill="white"><path d="M69 28 Q78 28 79 40 L69 44 Z"/><rect x="68" y="44" width="3.5" height="34" rx="1.75"/></g></svg></div>
+      <div style="font-size:18px;font-weight:600;margin-bottom:8px">Pagamento in elaborazione</div>
+      <div style="font-size:14px;color:var(--muted);line-height:1.7">Abbiamo ricevuto il tuo ordine.<br>La conferma può richiedere qualche minuto.</div>
+      <button class="btn-outline" onclick="checkSub()">Ricarica stato abbonamento</button>
+      <button class="btn-outline" onclick="doLogout()" style="font-size:13px;color:var(--muted)">Esci</button>
     </div>
   </div>
 </div>
 
-<div id="cookie-banner" role="dialog" aria-label="Consenso cookie">
-  <p>Questo sito utilizza cookie tecnici necessari al funzionamento e, previo consenso, cookie analitici (Google Analytics) per migliorare l&rsquo;esperienza di navigazione. Leggi la nostra <a href="/privacy-policy">Privacy Policy</a> e <a href="/cookies">Cookie Policy</a>.</p>
-  <div class="cookie-actions">
-    <button class="cookie-btn cookie-decline" id="cookie-decline">Solo necessari</button>
-    <button class="cookie-btn cookie-accept" id="cookie-accept">Accetta tutti</button>
+<!-- APP -->
+<div id="appWrap" class="hidden">
+  <div style="position:sticky;top:0;z-index:100;background:#141414;border-bottom:1px solid #2a2a2a">
+    <div style="max-width:480px;margin:0 auto;padding:16px 20px 10px;display:flex;flex-direction:column;align-items:center;gap:6px">
+      <div style="width:52px;height:52px;border-radius:16px;background:#E63946;display:flex;align-items:center;justify-content:center;overflow:hidden"><svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><path d="M60 8 L104 26 L104 62 Q104 88 60 112 Q16 88 16 62 L16 26 Z" fill="white" opacity="0.15"/><path d="M60 8 L104 26 L104 62 Q104 88 60 112 Q16 88 16 62 L16 26 Z" fill="none" stroke="white" stroke-width="3"/><g fill="white"><rect x="48" y="28" width="3.5" height="20" rx="1.5"/><rect x="53.5" y="28" width="3.5" height="20" rx="1.5"/><rect x="59" y="28" width="3.5" height="20" rx="1.5"/><path d="M48 44 Q48 52 51.75 54 Q55.5 52 55.5 44 Z"/><rect x="50" y="54" width="3.5" height="24" rx="1.75"/></g><g fill="white"><path d="M69 28 Q78 28 79 40 L69 44 Z"/><rect x="68" y="44" width="3.5" height="34" rx="1.75"/></g></svg></div>
+      <div style="font-size:14px;font-weight:600;color:#f0ede8;line-height:1">NoShowApp</div>
+      <div style="font-size:10px;color:#888;line-height:1" id="headerRist"></div>
+    </div>
+    <nav id="mainTabs" style="max-width:480px;margin:0 auto;display:flex;flex-direction:row;padding:4px 8px;gap:2px">
+      <div class="tab active" onclick="goTab('cerca')"><span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="6"/><line x1="14.5" y1="14.5" x2="20" y2="20"/><line x1="10" y1="7" x2="10" y2="7.01"/><line x1="7" y1="10" x2="13" y2="10"/></svg></span>Cerca</div>
+      <div class="tab" onclick="goTab('segnala')"><span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3C8 3 4 6 4 10c0 5 8 11 8 11s8-6 8-11c0-4-4-7-8-7z"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="15" r="0.8" fill="currentColor"/></svg></span>Segnala</div>
+      <div class="tab" onclick="goTab('feed')"><span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="3"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg></span>Storico</div>
+      <div class="tab" onclick="goTab('cauzioni')"><span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="3"/><path d="M16 7V5a4 4 0 0 0-8 0v2"/><circle cx="12" cy="14" r="2"/></svg></span>Cauzioni</div>
+      <div class="tab" id="tabSetup" onclick="goTab('setup')"><span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>Setup</div>
+    </nav>
   </div>
+  <main>
+    <div class="page active" id="page-cerca">
+      <div class="search-box" style="position:relative">
+        <div class="section-label">Verifica numero in entrata</div>
+        <div style="position:relative">
+          <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none">🔍</span>
+          <input class="phone-input" id="searchInput" type="tel" placeholder="+39 347 1234567" style="padding-left:40px;width:100%" oninput="cercaRealtime(this.value)"/>
+        </div>
+      </div>
+      <div id="searchResult"></div>
+    </div>
+    <div class="page" id="page-segnala">
+      <div class="form-card">
+        <div class="form-title">Nuova segnalazione no-show</div>
+        <div class="field"><label>Numero di telefono *</label><input id="rPhone" type="tel" placeholder="+39 347 1234567"/></div>
+        <div class="field"><label>Nome del cliente</label><input id="rName" type="text" placeholder="Mario Rossi"/></div>
+        <div class="field"><label>Data dell'episodio</label><input id="rDate" type="date"/></div>
+        <div class="field"><label>Note</label><textarea id="rNote" style="height:80px;line-height:1.5" placeholder="Es: tavolo da 4, cena, nessun avviso…"></textarea></div>
+        <button class="btn-submit" id="btnSubmit" onclick="segnala()">Invia segnalazione</button>
+        <div class="toast toast-ok" id="toastSegnalaOk" style="margin-top:8px;text-align:center;justify-content:center">✓ Segnalazione inviata con successo</div>
+        <div class="toast toast-err" id="toastErr">✗ Errore. Riprova.</div>
+      </div>
+    </div>
+    <div class="page" id="page-feed">
+      <div class="feed-header">
+        <div class="feed-title">Segnalazioni recenti</div>
+        <div class="count-badge" id="feedCount">—</div>
+      </div>
+      <div id="feedList"><div class="loading">Caricamento…</div></div>
+    </div>
+    <div class="page hidden" id="page-cauzioni">
+      <div class="feed-header">
+        <div class="feed-title">Garanzie carta</div>
+        <div class="count-badge" id="cauzioniCount">—</div>
+      </div>
+      <div id="cauzioniList"><div class="loading">Caricamento…</div></div>
+    </div>
+
+    <div class="page hidden" id="page-setup">
+      <div class="admin-section">
+        <h2>Garanzia carta</h2>
+        <div class="field">
+          <label>Penale per no-show (€ a persona)</label>
+          <input type="number" id="setupPenale" min="5" max="500" value="30"
+            style="background:var(--card2);color:var(--text);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;font-size:16px;width:100%;outline:none;font-family:inherit"/>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px">Importo che verrà addebitato al cliente in caso di no-show, moltiplicato per il numero di persone.</div>
+        </div>
+        <div class="field">
+          <label>Ore minime per cancellazione gratuita</label>
+          <input type="number" id="setupOre" min="1" max="168" value="12"
+            style="background:var(--card2);color:var(--text);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;font-size:16px;width:100%;outline:none;font-family:inherit"/>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px">Il cliente può cancellare gratuitamente fino a questo numero di ore prima della prenotazione.</div>
+        </div>
+        <div class="field">
+          <label>Alert se il cliente non inserisce la carta entro (minuti)</label>
+          <input type="number" id="setupMinutiAttesa" min="1" max="1440" value="30"
+            style="background:var(--card2);color:var(--text);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;font-size:16px;width:100%;outline:none;font-family:inherit"/>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px">Ricevi un alert nell'app se il cliente non inserisce la carta entro questo tempo dal momento in cui hai inviato il link.</div>
+        </div>
+        <button class="btn-submit" onclick="salvaSetup()">Salva impostazioni</button>
+        <div class="toast toast-ok" id="toastSetupOk" style="margin-top:8px;text-align:center">✓ Impostazioni salvate</div>
+      </div>
+      <div class="admin-section">
+        <h2>Anteprima disclaimer</h2>
+        <div id="setupPreview" style="background:rgba(46,204,113,0.08);border:1px solid rgba(46,204,113,0.25);border-radius:10px;padding:14px;font-size:12px;line-height:1.7;color:var(--text)">
+          <div style="font-weight:600;font-size:13px;margin-bottom:6px">🔒 Garanzia della prenotazione</div>
+          <span id="previewTesto"></span>
+          <div style="margin-top:8px;font-size:11px;color:var(--muted)">🔒 Pagamento sicuro tramite Stripe — i dati della carta non raggiungono mai il ristorante.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page hidden" id="page-admin">
+      <div class="admin-section">
+        <h2>Genera e invia codice invito</h2>
+        <div class="invite-row" style="margin-bottom:8px">
+          <input class="invite-input" id="inviteCode" readonly placeholder="Clicca Genera →"/>
+          <button class="btn-gen" onclick="genInvite()">Genera</button>
+          <button class="btn-copy" onclick="copyInvite()">📋<span class="copy-label">Copia</span></button>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <input id="inviteEmail" type="email" placeholder="email@ristoratore.it" style="flex:1;padding:10px 13px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;background:var(--bg);color:var(--text);font-family:inherit;outline:none"/>
+          <button onclick="inviaMailto()" style="padding:10px 16px;background:var(--red);color:white;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap">✉ Apri mail</button>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-top:8px">Genera un codice, inserisci l'email e clicca <b>Apri mail</b> — si apre il tuo client di posta con il messaggio già compilato.</div>
+      </div>
+      <div class="admin-section">
+        <h2>Utenti registrati</h2>
+        <div id="userList"><div class="loading">Caricamento…</div></div>
+      </div>
+    </div>
+  </main>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
+let CFG={},SB=null,currentUser=null,currentProfile=null;
 
-  // Popup prenotazione
-  var popupShown = sessionStorage.getItem('popup-shown');
-  if (!popupShown) {
-    setTimeout(function() {
-      document.getElementById('booking-overlay').classList.add('visible');
-      sessionStorage.setItem('popup-shown', '1');
-    }, 5000);
+function loadCFG(){
+  CFG={
+    url:'https://ltgvyanqzkpulocypsve.supabase.co',
+    key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx0Z3Z5YW5xemtwdWxvY3lwc3ZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5NDM1NTUsImV4cCI6MjA4OTUxOTU1NX0.vyqyMFhgwrpIdkVkCHDNKUXxpBQSJlmgYVpEUvrbHEs',
+    stripeLink:'https://buy.stripe.com/test_dRm9AUejmdDD6yIfxa0kE00',
+    priceAmt:'19',
+    admin:''
+  };
+  const pp=document.getElementById('planPrice'); if(pp) pp.innerHTML=`€${CFG.priceAmt} <span>/ mese</span>`;
+}
+
+function salvaConfig(){
+  document.getElementById('setupModal').classList.remove('show');
+  initApp();
+}
+
+async function initApp(){
+  loadCFG();
+  if(typeof supabase === 'undefined'){
+    setTimeout(initApp, 200); return;
   }
-  function closePopup() {
-    document.getElementById('booking-overlay').classList.remove('visible');
+  try {
+    SB=supabase.createClient(CFG.url,CFG.key);
+  } catch(e) {
+    console.error('Supabase init error:', e);
+    setTimeout(initApp, 500); return;
   }
-  document.getElementById('popup-close').addEventListener('click', closePopup);
-  document.getElementById('popup-skip').addEventListener('click', closePopup);
-  document.getElementById('booking-overlay').addEventListener('click', function(e) {
-    if (e.target === this) closePopup();
+  const pp2=document.getElementById('planPrice'); if(CFG.priceAmt&&pp2) pp2.innerHTML=`€${CFG.priceAmt} <span>/ mese</span>`;
+  const{data:{session}}=await SB.auth.getSession();
+  if(session){currentUser=session.user;await loadProfile()}
+  else showScreen('screenLogin');
+  SB.auth.onAuthStateChange(async(ev,sess)=>{
+    if(ev==='SIGNED_IN'&&sess){currentUser=sess.user;await loadProfile()}
+    else if(ev==='SIGNED_OUT'){currentUser=null;currentProfile=null;const ta=document.getElementById('tabAdmin');if(ta){ta.remove();}showScreen('screenLogin');}
   });
+}
 
-
-  // Lightbox
-  var galleryImages = [
-    { src: 'img/piatto-pesce.jpg', alt: 'Pesce alla griglia' },
-    { src: 'img/piatto-tonno.jpg', alt: 'Tonno scottato' },
-    { src: 'img/piatto-pasta.jpg', alt: 'Pasta fresca' },
-    { src: 'img/piatto-carne.jpg', alt: 'Secondo piatto' },
-    { src: 'img/piatto-dessert.jpg', alt: 'Dessert' }
-  ];
-  var currentImg = 0;
-  function openLightbox(i) {
-    currentImg = i;
-    document.getElementById('lightbox-img').src = galleryImages[i].src;
-    document.getElementById('lightbox-img').alt = galleryImages[i].alt;
-    document.getElementById('lightbox').classList.add('visible');
-    document.body.style.overflow = 'hidden';
+async function loadProfile(){
+  const{data}=await SB.from('profiles').select('*').eq('id',currentUser.id).single();
+  currentProfile=data;
+  if(!currentProfile){showScreen('screenLogin');return}
+  if(currentProfile.subscription_status==='active') showApp();
+  else{
+    const p=new URLSearchParams(location.search);
+    if(p.get('stripe')==='success') showScreen('screenPending');
+    else showScreen('screenPaywall');
   }
-  function closeLightbox() {
-    document.getElementById('lightbox').classList.remove('visible');
-    document.body.style.overflow = '';
+}
+
+const SCREENS=['screenLogin','screenRegister','screenPaywall','screenPending'];
+function showScreen(id){
+  document.getElementById('authWrap').classList.remove('hidden');
+  document.getElementById('appWrap').classList.add('hidden');
+  SCREENS.forEach(s=>document.getElementById(s).classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+
+function showApp(){
+  document.getElementById('authWrap').classList.add('hidden');
+  document.getElementById('appWrap').classList.remove('hidden');
+  document.getElementById('headerRist').textContent=currentProfile.ristorante||'';
+  document.getElementById('rDate').value=new Date().toISOString().slice(0,10);
+    const ts=document.getElementById('toastSegnalaOk');if(ts){ts.classList.add('show');setTimeout(()=>ts.classList.remove('show'),3000);}
+  if(currentProfile.role==='admin'&&!document.getElementById('tabAdmin')){
+    const tabs=document.getElementById('mainTabs');
+    
+    const t=document.createElement('div');
+    t.className='tab';t.id='tabAdmin';
+    t.innerHTML='<span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3L4 7v5c0 5 4 9 8 10 4-1 8-5 8-10V7z"/><polyline points="9,12 11,14 15,10"/></svg></span>Admin';
+    t.onclick=()=>goTab('admin');
+    tabs.appendChild(t);
   }
-  function changeLightbox(dir) {
-    currentImg = (currentImg + dir + galleryImages.length) % galleryImages.length;
-    document.getElementById('lightbox-img').src = galleryImages[currentImg].src;
-    document.getElementById('lightbox-img').alt = galleryImages[currentImg].alt;
+  if(!document.getElementById('tabEsci')){
+    const te=document.createElement('div');
+    te.className='tab';te.id='tabEsci';
+    te.innerHTML='<span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>Esci';
+    te.onclick=()=>doLogout();
+    document.getElementById('mainTabs').appendChild(te);
+
   }
-  document.getElementById('lightbox').addEventListener('click', function(e) {
-    if (e.target === this) closeLightbox();
-  });
-  document.addEventListener('keydown', function(e) {
-    var lb = document.getElementById('lightbox');
-    if (!lb.classList.contains('visible')) return;
-    if (e.key === 'Escape') closeLightbox();
-    if (e.key === 'ArrowLeft') changeLightbox(-1);
-    if (e.key === 'ArrowRight') changeLightbox(1);
-  });
+  if(!document.getElementById('tabEsci')){
+    const te=document.createElement('div');
+    te.className='tab';te.id='tabEsci';
+    te.innerHTML='<span class="tab-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>Esci';
+    te.onclick=()=>doLogout();
+    document.getElementById('mainTabs').appendChild(te);
+  }
+  loadFeed();
+  loadSetup();
+}
 
-  var nav = document.getElementById('main-nav');
-  window.addEventListener('scroll', function() {
-    nav.classList.toggle('scrolled', window.scrollY > 60);
-  });
+async function doLogin(){
+  if(!SB){setTimeout(doLogin,300);return;}
+  const email=document.getElementById('loginEmail').value.trim();
+  const pwd=document.getElementById('loginPwd').value;
+  const err=document.getElementById('loginErr');
+  const btn=document.getElementById('btnLogin');
+  err.classList.remove('show');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span>';
+  const{error, data}=await SB.auth.signInWithPassword({email,password:pwd});
+  btn.disabled=false;btn.textContent='Accedi';
+  console.log('Login result:', error, data);
+  if(error){err.textContent='Email o password errati.';err.classList.add('show')}
+  else if(data&&data.user){
+    console.log('Login OK, loading profile...');
+    currentUser=data.user;
+    await loadProfile();
+  }
+}
 
-  document.getElementById('hamburger').addEventListener('click', function() {
-    document.getElementById('mobile-menu').classList.add('open');
-  });
-  document.getElementById('menu-close').addEventListener('click', function() {
-    document.getElementById('mobile-menu').classList.remove('open');
-  });
-  document.querySelectorAll('.mobile-link').forEach(function(a) {
-    a.addEventListener('click', function() {
-      document.getElementById('mobile-menu').classList.remove('open');
-    });
-  });
+async function doRegister(){
+  if(!SB){setTimeout(doRegister,300);return;}
+  const code=document.getElementById('regCode').value.trim().toUpperCase();
+  const rist=document.getElementById('regRist').value.trim();
+  const email=document.getElementById('regEmail').value.trim();
+  const pwd=document.getElementById('regPwd').value;
+  const err=document.getElementById('regErr');
+  const ok=document.getElementById('regOk');
+  const btn=document.getElementById('btnReg');
+  err.classList.remove('show');ok.classList.remove('show');
+  if(!document.getElementById('privacyCheck').checked){err.textContent='Accetta la privacy policy per continuare.';err.classList.add('show');return}
+  if(!code||!rist||!email||!pwd){err.textContent='Compila tutti i campi.';err.classList.add('show');return}
+  if(pwd.length<8){err.textContent='Password di almeno 8 caratteri.';err.classList.add('show');return}
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Verifica codice…';
+  const{data:invite,error:invErr}=await SB.from('invite_codes').select('*').eq('code',code).single();
+  if(invErr||!invite){
+    btn.disabled=false;btn.textContent='Crea account';
+    err.textContent='Codice invito non valido.';err.classList.add('show');return;
+  }
+  if(invite.used===true){
+    btn.disabled=false;btn.textContent='Crea account';
+    err.textContent='Codice invito già utilizzato.';err.classList.add('show');return;
+  }
+  btn.textContent='Creazione account…';
+  const{data:authData,error:authErr}=await SB.auth.signUp({email,password:pwd});
+  if(authErr){
+    btn.disabled=false;btn.textContent='Crea account';
+    err.textContent=authErr.message;err.classList.add('show');return;
+  }
+  const uid=authData.user.id;
+  await SB.from('profiles').insert([{id:uid,ristorante:rist,role:'user',subscription_status:'active'}]);
+  await SB.from('invite_codes').update({used:true,used_by:uid}).eq('id',invite.id);
+  btn.disabled=false;btn.textContent='Crea account';
+  await SB.auth.signInWithPassword({email,password:pwd});
+}
 
-  var reveals = document.querySelectorAll('.reveal');
-  var observer = new IntersectionObserver(function(entries) {
-    entries.forEach(function(e) {
-      if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
-    });
-  }, { threshold: 0.12 });
-  reveals.forEach(function(el) { observer.observe(el); });
+function doLogout(){if(SB) SB.auth.signOut({scope:'local'}); else showScreen('screenLogin');}
 
-  var form = document.getElementById('contact-form');
-  var btn = document.getElementById('submit-btn');
-  var status = document.getElementById('form-status');
-  form.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    btn.textContent = 'Invio in corso...';
-    btn.disabled = true;
-    status.className = 'form-status';
-    try {
-      var res = await fetch(form.action, {
-        method: 'POST',
-        body: new FormData(form),
-        headers: { 'Accept': 'application/json' }
-      });
-      if (res.ok) {
-        status.textContent = 'Messaggio inviato! Ti risponderemo al pi\u00f9 presto.';
-        status.className = 'form-status success';
-        form.reset();
-      } else { throw new Error(); }
-    } catch(err) {
-      status.textContent = 'Errore nell\u2019invio. Scrivici a santamonicagenova@gmail.com';
-      status.className = 'form-status error';
+function goToStripe(){
+  if(!CFG.stripeLink){
+    alert('Configura il Payment Link Stripe nelle impostazioni.');return;
+  }
+  const url=CFG.stripeLink+(CFG.stripeLink.includes('?')?'&':'?')+'prefilled_email='+encodeURIComponent(currentUser.email)+'&client_reference_id='+currentUser.id;
+  window.location.href=url;
+}
+
+async function checkSub(){
+  await loadProfile();
+}
+
+function goTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  const nameMap={cerca:'cerca',segnala:'segnala',feed:'feed',cauzioni:'cauzioni',admin:'admin'};
+  document.querySelectorAll('.tab').forEach(t=>{
+    const fn=t.getAttribute('onclick')||'';
+    const id=t.id||'';
+    if(fn.includes("goTab('"+name+"')") || (name==='admin'&&id==='tabAdmin') || (name==='cauzioni'&&fn.includes("cauzioni"))){
+      t.classList.add('active');
     }
-    btn.textContent = 'Invia messaggio';
-    btn.disabled = false;
   });
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const pg=document.getElementById('page-'+name);
+  if(pg){pg.classList.remove('hidden');pg.classList.add('active')}
+  if(name==='feed') loadFeed();
+  if(name==='cauzioni') loadCauzioni();
+  if(name==='setup') { loadSetup(); document.getElementById('setupPenale')?.addEventListener('input', aggiornaPreview); document.getElementById('setupOre')?.addEventListener('input', aggiornaPreview); }
+  if(name==='admin') loadUsers();
+}
 
-  function loadGA() {
-    var s = document.createElement('script');
-    s.async = true;
-    s.src = 'https://www.googletagmanager.com/gtag/js?id=G-YP71EKXSXX';
-    document.head.appendChild(s);
-    window.dataLayer = window.dataLayer || [];
-    function gtag() { dataLayer.push(arguments); }
-    window.gtag = gtag;
-    gtag('js', new Date());
-    gtag('config', 'G-YP71EKXSXX', { anonymize_ip: true });
-  }
+let _searchTimer=null;
+function cercaRealtime(val){
+  clearTimeout(_searchTimer);
+  const res=document.getElementById('searchResult');
+  if(!val||val.length<5){res.innerHTML='';return}
+  res.innerHTML='<div class="loading" style="padding:20px 0;font-size:13px">Ricerca…</div>';
+  _searchTimer=setTimeout(()=>cerca(val),350);
+}
 
-  var banner = document.getElementById('cookie-banner');
-  var choice = localStorage.getItem('cookie-choice');
-  if (!choice) {
-    setTimeout(function() { banner.classList.add('visible'); }, 1200);
-  } else if (choice === 'accepted') {
-    loadGA();
+async function cerca(raw){
+  if(!raw) raw=document.getElementById('searchInput').value.trim();
+  if(!raw) return;
+  const res=document.getElementById('searchResult');
+  const{data:rows,error}=await SB.from('noshow').select('*').eq('phone',raw).order('created_at',{ascending:false});
+  if(error){res.innerHTML='<div class="loading">Errore ricerca.</div>';return}
+  if(!rows||rows.length===0){
+    res.innerHTML=`<div class="result-box result-ok" style="text-align:center;padding:28px 20px">
+      <div style="font-size:40px;margin-bottom:12px">✅</div>
+      <div class="result-title" style="font-size:18px">Nessun rischio</div>
+      <div class="result-meta" style="margin-top:6px">Il numero non è nel database</div>
+      <button onclick="mostraCauzioneForm('${raw}')" style="width:100%;padding:12px;background:var(--red);color:white;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:16px;display:flex;align-items:center;justify-content:center;gap:8px">💳 Richiedi garanzia carta</button>
+    </div>
+    <div id="cauzioneFormContainer"></div>`;return;
   }
-  document.getElementById('cookie-accept').addEventListener('clic
+  const ristN=[...new Set(rows.map(r=>r.ristorante).filter(Boolean))].length||1;
+  const risk=rows.length>=3?'ALTO':rows.length>=2?'MEDIO':'BASSO';
+  const riskColor=rows.length>=3?'var(--red)':rows.length>=2?'var(--amber)':'#f39c12';
+  const riskBg=rows.length>=3?'rgba(230,57,70,0.12)':rows.length>=2?'rgba(243,156,18,0.12)':'rgba(243,156,18,0.08)';
+  const items=rows.map(r=>{
+    const d=r.date?new Date(r.date+'T00:00:00').toLocaleDateString('it-IT'):'—';
+    return`<div class="seg-item" style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div><strong style="display:block;color:var(--text)">${r.ristorante||'—'}</strong><span style="font-size:12px;color:var(--muted)">${r.note||''}</span></div>
+      <span style="font-size:11px;color:var(--muted);white-space:nowrap;margin-left:8px">${d}</span>
+    </div>`;
+  }).join('');
+  const cauzioneBtn = `<button onclick="mostraCauzioneForm('${raw}')" style="width:100%;padding:12px;background:var(--red);color:white;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:8px">💳 Richiedi garanzia carta</button>`;
+  res.innerHTML=`<div class="result-box result-danger" style="text-align:center;padding:28px 20px;background:${riskBg};margin-bottom:12px">
+    <div style="font-size:48px;margin-bottom:12px">🛡</div>
+    <div style="font-size:22px;font-weight:700;letter-spacing:2px;color:${riskColor};margin-bottom:6px">RISCHIO ${risk}</div>
+    <div style="font-size:14px;color:var(--muted)">${rows.length} segnalazion${rows.length>1?'i':'e'} da ${ristN} ristorante${ristN!==1?'i':''}</div>
+    ${rows[0].name?`<div style="font-size:13px;color:var(--text);margin-top:8px">👤 ${rows[0].name}</div>`:''}
+    ${cauzioneBtn}
+  </div>
+  <div id="cauzioneFormContainer"></div>
+  <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:8px">Storico segnalazioni</div>
+  <div class="seg-list">${items}</div>`;
+}
+
+async function segnala(){
+  const phone=document.getElementById('rPhone').value.trim();
+  if(!phone){document.getElementById('rPhone').focus();return}
+  const btn=document.getElementById('btnSubmit');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Invio…';
+  const{error}=await SB.from('noshow').insert([{
+    phone,user_id:currentUser.id,
+    name:document.getElementById('rName').value.trim()||null,
+    date:document.getElementById('rDate').value||null,
+    note:document.getElementById('rNote').value.trim()||null,
+    ristorante:currentProfile.ristorante||null
+  }]);
+  btn.disabled=false;btn.textContent='Invia segnalazione';
+  if(!error){
+    document.getElementById('rPhone').value='';
+    document.getElementById('rName').value='';
+    document.getElementById('rNote').value='';
+    const ts = document.getElementById('toastSegnalaOk');
+    if(ts){ts.classList.add('show');setTimeout(()=>ts.classList.remove('show'),3000);}
+  } else {
+    const t=document.getElementById('toastErr');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);
+  }
+}
+
+
+
+let setupConfig = { penale: 30, ore: 12, minutiAttesa: 30 };
+
+function loadSetup() {
+  const saved = localStorage.getItem('noshowapp_setup');
+  if (saved) {
+    try { setupConfig = JSON.parse(saved); } catch(e) {}
+  }
+  cauzioneDefaultAmt = setupConfig.penale;
+  const penaleEl = document.getElementById('setupPenale');
+  const oreEl = document.getElementById('setupOre');
+  const minutiEl = document.getElementById('setupMinutiAttesa');
+  if (penaleEl) penaleEl.value = setupConfig.penale;
+  if (oreEl) oreEl.value = setupConfig.ore;
+  if (minutiEl) minutiEl.value = setupConfig.minutiAttesa || 30;
+  aggiornaPreview();
+  avviaControlloScadenze();
+}
+
+
+function salvaSetup() {
+  const penale = parseInt(document.getElementById('setupPenale').value) || 30;
+  const ore = parseInt(document.getElementById('setupOre').value) || 12;
+  const minutiAttesa = parseInt(document.getElementById('setupMinutiAttesa').value) || 30;
+  setupConfig = { penale, ore, minutiAttesa };
+  cauzioneDefaultAmt = penale;
+  localStorage.setItem('noshowapp_setup', JSON.stringify(setupConfig));
+  aggiornaPreview();
+  avviaControlloScadenze();
+  const t = document.getElementById('toastSetupOk');
+  if(t){t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500);}
+}
+
+function aggiornaPreview() {
+  const el = document.getElementById('previewTesto');
+  if (!el) return;
+  const penale = document.getElementById('setupPenale')?.value || setupConfig.penale;
+  const ore = document.getElementById('setupOre')?.value || setupConfig.ore;
+  el.innerHTML = `Il Suo tavolo è riservato. Per completare la prenotazione Le chiediamo una carta a garanzia — <b>nessun addebito, nessun blocco fondi</b>. Potrà cancellare gratuitamente fino a <b>${ore} ore prima</b>. Solo in caso di mancata presentazione senza avviso si applica una penale di <b>€${penale} a persona</b>.`;
+}
+
+let _scadenzeTimer = null;
+const _alertatiIds = new Set(); // evita di ripetere lo stesso alert
+
+function avviaControlloScadenze() {
+  if (_scadenzeTimer) clearInterval(_scadenzeTimer);
+  // Controlla subito e poi ogni minuto
+  controllaScadenze();
+  _scadenzeTimer = setInterval(controllaScadenze, 60000);
+}
+
+async function controllaScadenze() {
+  if (!SB || !currentUser) return;
+  const minuti = setupConfig.minutiAttesa || 30;
+  const soglia = new Date(Date.now() - minuti * 60000).toISOString();
+  const { data: scadute } = await SB.from('cauzioni')
+    .select('id, phone, note, totale')
+    .eq('ristorante_id', currentUser.id)
+    .eq('status', 'in_attesa')
+    .lt('created_at', soglia);
+  if (!scadute || scadute.length === 0) return;
+  scadute.forEach(r => {
+    if (_alertatiIds.has(r.id)) return;
+    _alertatiIds.add(r.id);
+    mostraAlertScadenza(r, minuti);
+  });
+}
+
+function mostraAlertScadenza(r, minuti) {
+  const banner = document.createElement('div');
+  banner.style.cssText = `
+    position:fixed;top:70px;left:50%;transform:translateX(-50%);
+    background:#1c1c1c;border:2px solid #f39c12;color:var(--text);
+    padding:16px 20px;border-radius:14px;font-size:14px;font-weight:500;
+    z-index:1000;box-shadow:0 4px 24px rgba(0,0,0,0.5);
+    animation:fadeIn .3s ease;max-width:340px;width:90%;
+  `;
+  banner.innerHTML = `
+    <div style="font-size:13px;color:#f39c12;font-weight:700;margin-bottom:6px">⏰ Carta non inserita</div>
+    <div style="font-size:13px;margin-bottom:4px">${r.phone}</div>
+    ${r.note ? `<div style="font-size:12px;color:#888;margin-bottom:4px">${r.note}</div>` : ''}
+    <div style="font-size:12px;color:#888;margin-bottom:12px">Nessuna carta dopo ${minuti} minuti — €${r.totale}</div>
+    <div style="display:flex;gap:8px">
+      <button onclick="goTab('cauzioni');this.closest('div[style]').remove()" style="flex:1;padding:8px;background:#f39c12;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Vai alle cauzioni</button>
+      <button onclick="this.closest('div[style]').remove()" style="padding:8px 14px;background:none;border:1px solid #444;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;color:#888">✕</button>
+    </div>
+  `;
+  document.body.appendChild(banner);
+}
+
+function mostraCauzioneForm(phone) {
+  const container = document.getElementById('cauzioneFormContainer');
+  if (!container) return;
+  container.innerHTML = `<div class="cauzione-form">
+    <div class="form-title">💳 Richiedi garanzia carta per ${phone}</div>
+    <div style="background:rgba(46,204,113,0.08);border:1px solid rgba(46,204,113,0.25);border-radius:10px;padding:14px;margin-bottom:14px;font-size:12px;line-height:1.7;color:var(--text)">
+      <div style="font-weight:600;font-size:13px;margin-bottom:6px">🔒 Garanzia della prenotazione</div>
+      Il Suo tavolo è riservato. Per completare la prenotazione Le chiediamo una carta a garanzia — <b>nessun addebito, nessun blocco fondi</b>. Potrà cancellare gratuitamente fino a <b>${setupConfig.ore} ore prima</b>. Solo in caso di mancata presentazione senza avviso si applica una penale di <b>€${setupConfig.penale} a persona</b>.
+      <div style="margin-top:8px;font-size:11px;color:var(--muted)">🔒 Pagamento sicuro tramite Stripe — i dati della carta non raggiungono mai il ristorante. <a href="https://noshowapp.it/privacy.html" target="_blank" style="color:#4a9eff;text-decoration:none">Leggi i termini completi →</a></div>
+    </div>
+    <div class="cauzione-row">
+      <div class="field" style="margin-bottom:0">
+        <label>Persone</label>
+        <input type="number" id="cPersone" min="1" max="20" value="2" style="background:var(--card);color:var(--text);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:15px;width:100%;outline:none;font-family:inherit" oninput="aggiornaTotale()"/>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label>€ a persona</label>
+        <input type="number" id="cImporto" min="5" max="200" value="${cauzioneDefaultAmt}" style="background:var(--card);color:var(--text);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:15px;width:100%;outline:none;font-family:inherit" oninput="aggiornaTotale()"/>
+      </div>
+    </div>
+    <div class="field">
+      <label>Nome cliente</label>
+      <input type="text" id="cNome" placeholder="Es: Mario Rossi" style="background:var(--card);color:var(--text);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:14px;width:100%;outline:none;font-family:inherit"/>
+    </div>
+    <div class="field">
+      <label>Data prenotazione</label>
+      <input type="date" id="cDataPrenotazione" style="background:var(--card);color:var(--text);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:14px;width:100%;outline:none;font-family:inherit"/>
+    </div>
+    <div class="field">
+      <label>Note (opzionale)</label>
+      <input type="text" id="cNote" placeholder="Es: Tavolo da 2, cena" style="background:var(--card);color:var(--text);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:14px;width:100%;outline:none;font-family:inherit"/>
+    </div>
+    <div class="cauzione-total">
+      <span class="cauzione-total-label">Penale totale</span>
+      <span class="cauzione-total-amt" id="cTotale">€60</span>
+    </div>
+    <button class="btn-submit" id="btnGeneraLink" onclick="generaLinkCauzione('${phone}')" style="margin-bottom:8px">Genera link garanzia</button>
+    <div class="toast toast-err" id="toastCauzioneErr" style="margin-top:8px">✗ Errore. Riprova.</div>
+  </div>`;
+  aggiornaTotale();
+  // Data default = oggi
+  const dp = document.getElementById('cDataPrenotazione');
+  if (dp) dp.value = new Date().toISOString().slice(0,10);
+  container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function aggiornaTotale() {
+  const p = parseInt(document.getElementById('cPersone')?.value) || 0;
+  const i = parseFloat(document.getElementById('cImporto')?.value) || 0;
+  const el = document.getElementById('cTotale');
+  if (el) el.textContent = '€' + (p * i).toFixed(0);
+}
+
+async function generaLinkCauzione(phone) {
+  const persone = parseInt(document.getElementById('cPersone').value);
+  const importo = parseFloat(document.getElementById('cImporto').value);
+  const nome = document.getElementById('cNome').value.trim();
+  const dataPrenotazione = document.getElementById('cDataPrenotazione').value;
+  const note = document.getElementById('cNote').value.trim();
+  const btn = document.getElementById('btnGeneraLink');
+  const toastErr = document.getElementById('toastCauzioneErr');
+  if (!persone || !importo) return;
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Generazione link…';
+
+  try {
+    const res = await fetch(
+      'https://ltgvyanqzkpulocypsve.supabase.co/functions/v1/create-setup-intent',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': CFG.key },
+        body: JSON.stringify({
+          phone,
+          name: nome || 'Cliente',
+          persone,
+          importo_persona: importo,
+          ristorante: currentProfile.ristorante,
+          ristorante_id: currentUser.id,
+        })
+      }
+    );
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    // Salva subito la cauzione su Supabase con status in_attesa
+    const { data: cauzioneRow, error: dbErr } = await SB.from('cauzioni').insert([{
+      ristorante_id: currentUser.id,
+      ristorante: currentProfile.ristorante,
+      phone,
+      persone,
+      importo_persona: importo,
+      totale: persone * importo,
+      nome: nome || null,
+      data_prenotazione: dataPrenotazione || null,
+      note: note || null,
+      stripe_payment_link: data.url,
+      stripe_payment_link_id: data.session_id,
+      status: 'in_attesa',
+    }]).select().single();
+
+    mostraLinkCauzione(phone, data.url, persone, importo, nome);
+
+    // Avvia polling se salvataggio ok
+    if (!dbErr && cauzioneRow) {
+      avviaPollingCauzione(cauzioneRow.id);
+    }
+
+  } catch(err) {
+    toastErr.textContent = '✗ ' + (err.message || 'Errore. Riprova.');
+    toastErr.classList.add('show');
+    setTimeout(() => { toastErr.classList.remove('show'); toastErr.textContent = '✗ Errore. Riprova.'; }, 4000);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Genera link garanzia';
+  }
+}
+
+let _pollingTimer = null;
+
+function avviaPollingCauzione(cauzioneId) {
+  if (_pollingTimer) clearInterval(_pollingTimer);
+  let tentativi = 0;
+  const maxTentativi = 60; // 10 minuti max (60 × 10s)
+
+  _pollingTimer = setInterval(async () => {
+    tentativi++;
+    if (tentativi > maxTentativi) {
+      clearInterval(_pollingTimer);
+      _pollingTimer = null;
+      return;
+    }
+    const { data } = await SB.from('cauzioni').select('status').eq('id', cauzioneId).single();
+    if (data && data.status === 'pagata') {
+      clearInterval(_pollingTimer);
+      _pollingTimer = null;
+      // Mostra notifica
+      mostraNotificaCarta();
+      loadCauzioni();
+    }
+  }, 10000);
+}
+
+function mostraNotificaCarta() {
+  // Crea toast di notifica temporaneo
+  const toast = document.createElement('div');
+  toast.style.cssText = `
+    position:fixed;top:80px;left:50%;transform:translateX(-50%);
+    background:#2ecc71;color:white;padding:14px 24px;border-radius:12px;
+    font-size:15px;font-weight:600;z-index:999;
+    box-shadow:0 4px 20px rgba(46,204,113,0.4);
+    animation:fadeIn .3s ease;white-space:nowrap;
+  `;
+  toast.textContent = '✓ Carta inserita dal cliente!';
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 5000);
+}
+
+function mostraLinkCauzione(phone, link, persone, importo, nome) {
+  const container = document.getElementById('cauzioneFormContainer');
+  const totale = persone * importo;
+  const disclaimer = encodeURIComponent(
+    `Gentile ${nome||'cliente'}, per confermare la Sua prenotazione presso ${currentProfile.ristorante} Le chiediamo di registrare una carta a garanzia.\n\n` +
+    `🔒 Nessun addebito ora, nessun blocco fondi.\n` +
+    `✓ Cancellazione gratuita fino a ${setupConfig.ore} ore prima.\n` +
+    `⚠ Penale di €${importo} a persona (totale €${totale}) solo in caso di no-show.\n\n` +
+    `🛡 I dati della carta sono gestiti da Stripe e non vengono mai condivisi con il ristorante — esattamente come avviene negli hotel.\n\n` +
+    `Inserisca i dati della carta tramite questo link sicuro:\n${link}`
+  );
+  const waLink = `https://wa.me/${phone.replace(/[^0-9]/g,'')}?text=${disclaimer}`;
+  container.innerHTML = `<div class="cauzione-form" style="border-color:rgba(46,204,113,0.3)">
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:32px;margin-bottom:8px">✅</div>
+      <div style="font-size:15px;font-weight:600;color:#2ecc71">Link generato!</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px">Garanzia €${totale} per ${phone}</div>
+    </div>
+    <div style="background:var(--card2);border-radius:8px;padding:10px 12px;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);word-break:break-all;margin-bottom:12px">${link}</div>
+    <a href="${waLink}" target="_blank" class="btn-whatsapp">📱 Invia su WhatsApp</a>
+    <button class="btn-copy-link" onclick="navigator.clipboard.writeText('${link}').then(()=>{this.textContent='✓ Copiato!';setTimeout(()=>this.textContent='📋 Copia link',1500)})">📋 Copia link</button>
+  </div>`;
+}
+
+async function aggiornaCauzione(id, status) {
+  await SB.from('cauzioni').update({ status }).eq('id', id);
+  loadCauzioni();
+}
+
+async function annullaCauzione(cauzioneId, phone) {
+  const segnala = confirm('Vuoi segnalare questo cliente come "no-carta" nel database?\n\nOK = Sì, segnala\nAnnulla = No, chiudi solo la cauzione');
+  await SB.from('cauzioni').update({ status: 'rifiuto' }).eq('id', cauzioneId);
+  if (segnala) {
+    await SB.from('noshow').insert([{
+      phone,
+      date: new Date().toISOString().slice(0, 10),
+      note: 'No-carta: ha rifiutato di inserire la carta di garanzia',
+      ristorante: currentProfile.ristorante,
+      user_id: currentUser.id,
+    }]);
+    const toast = document.createElement('div');
+    toast.style.cssText = `position:fixed;top:80px;left:50%;transform:translateX(-50%);background:#f39c12;color:white;padding:14px 24px;border-radius:12px;font-size:15px;font-weight:600;z-index:999;box-shadow:0 4px 20px rgba(243,156,18,0.4);animation:fadeIn .3s ease;white-space:nowrap;`;
+    toast.textContent = '⚠️ Cliente segnalato come no-carta';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+  }
+  loadCauzioni();
+}
+
+async function loadCauzioni(){
+  const list=document.getElementById('cauzioniList');
+  if(!list) return;
+  list.innerHTML='<div class="loading">Caricamento…</div>';
+  const{data:rows,error}=await SB.from('cauzioni').select('*')
+    .eq('ristorante_id',currentUser.id)
+    .order('created_at',{ascending:false}).limit(30);
+  if(error){list.innerHTML='<div class="loading">Errore: '+error.message+'</div>';return}
+  document.getElementById('cauzioniCount').textContent=(rows||[]).filter(r=>r.status==='in_attesa'||r.status==='pagata').length+' attive';
+  if(!rows||rows.length===0){list.innerHTML='<div class="empty-state"><div class="ei">💳</div>Nessuna cauzione ancora</div>';return}
+  list.innerHTML=rows.map(r=>{
+    const d=r.created_at?new Date(r.created_at).toLocaleDateString('it-IT'):'—';
+    const sc={in_attesa:'s-attesa',pagata:'s-pagata',usata:'s-usata',trattenuta:'s-trattenuta',rifiuto:'s-trattenuta'}[r.status]||'s-attesa';
+    const sl={in_attesa:'⏳ In attesa carta',pagata:'✓ Carta inserita',usata:'Chiusa',trattenuta:'Addebitata',rifiuto:'No-carta'}[r.status]||r.status;
+
+    const isAttesa = r.status === 'in_attesa';
+    const cardStyle = isAttesa
+      ? 'border:2px solid rgba(243,156,18,0.7);background:rgba(243,156,18,0.06);'
+      : '';
+
+    const annullaBtn = (isAttesa || r.status === 'pagata') ? `
+      <button onclick="annullaCauzione('${r.id}','${r.phone}')" style="width:100%;padding:8px;border:1px solid var(--muted);border-radius:6px;background:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:inherit;margin-top:8px">✕ Annulla cauzione</button>` : '';
+
+    const addebitaBtn = r.status === 'pagata' ? `
+      <div style="margin-top:8px">
+        <button onclick="addebitaCauzione('${r.id}')" style="width:100%;padding:8px;border:1px solid #ff6b6b;border-radius:6px;background:none;color:#ff6b6b;font-size:12px;cursor:pointer;font-family:inherit">💳 Addebita no-show</button>
+      </div>` : '';
+
+    return`<div class="cauzioni-item" id="cauzione-${r.id}" style="${cardStyle}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+        <div style="font-family:'DM Mono',monospace;font-size:14px;font-weight:500">${r.phone}</div>
+        <span class="cauzioni-status ${sc}">${sl}</span>
+      </div>
+      <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px">€${r.totale} <span style="font-size:12px;color:var(--muted);font-weight:400">(${r.persone} pers. × €${r.importo_persona})</span></div>
+      ${r.nome?`<div style="font-size:13px;color:var(--text);margin-bottom:2px">👤 ${r.nome}</div>`:''}
+      ${r.data_prenotazione?`<div style="font-size:12px;color:var(--muted);margin-bottom:2px">📅 ${new Date(r.data_prenotazione+'T00:00:00').toLocaleDateString('it-IT')}</div>`:''}
+      ${r.note?`<div style="font-size:12px;color:var(--muted);margin-bottom:4px">${r.note}</div>`:''}
+      <div style="font-size:11px;color:var(--muted)">${d} · ${r.ristorante}</div>
+      ${addebitaBtn}
+      ${annullaBtn}
+    </div>`;
+  }).join('');
+}
+
+async function aggiornaCauzione(id,status){
+  await SB.from('cauzioni').update({status}).eq('id',id);
+  loadCauzioni();
+}
+
+async function addebitaCauzione(id) {
+  if (!confirm('Confermi di addebitare la penale per no-show? L\'importo verrà addebitato sulla carta del cliente.')) return;
+  const item = document.getElementById('cauzione-' + id);
+  if (item) {
+    const btns = item.querySelectorAll('button');
+    btns.forEach(b => { b.disabled = true; });
+    const noShowBtn = [...btns].find(b => b.textContent.includes('Addebita'));
+    if (noShowBtn) noShowBtn.innerHTML = '<span class="spinner"></span> Addebito…';
+  }
+  try {
+    const res = await fetch(
+      'https://ltgvyanqzkpulocypsve.supabase.co/functions/v1/charge-cauzione',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': CFG.key },
+        body: JSON.stringify({ cauzione_id: id })
+      }
+    );
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    loadCauzioni();
+  } catch(err) {
+    alert('Errore addebito: ' + (err.message || 'Riprova.'));
+    loadCauzioni();
+  }
+}
+
+async function loadFeed(){
+  const list=document.getElementById('feedList');
+  list.innerHTML='<div class="loading">Caricamento…</div>';
+  const{data:rows,error}=await SB.from('noshow').select('*').order('created_at',{ascending:false}).limit(60);
+  if(error){list.innerHTML='<div class="loading">Errore.</div>';return}
+  document.getElementById('feedCount').textContent=(rows||[]).length+' totali';
+  if(!rows||rows.length===0){list.innerHTML='<div class="empty-state"><div class="ei">📭</div>Nessuna segnalazione ancora</div>';return}
+  list.innerHTML=rows.map(r=>{
+    const d=r.date?new Date(r.date+'T00:00:00').toLocaleDateString('it-IT'):'—';
+    const isAdmin = currentProfile && currentProfile.role === 'admin';
+    const isOwner = currentUser && r.user_id && r.user_id === currentUser.id;
+    const canDelete = isAdmin || isOwner;
+    return`<div class="feed-item" id="feed-${r.id}">
+      <div class="feed-dot">📵</div>
+      <div class="feed-body">
+        <div class="feed-phone">${r.phone}</div>
+        <div class="feed-name">${r.name||'Nome non inserito'}</div>
+        ${r.note?`<div class="feed-note">${r.note}</div>`:''}
+        <div class="feed-date">Episodio: ${d}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+        <div class="feed-rist">${r.ristorante||'—'}</div>
+        ${canDelete?`<button onclick="eliminaSegnalazione('${r.id}')" style="font-size:11px;padding:3px 8px;border:1px solid rgba(230,57,70,0.4);border-radius:6px;background:none;color:#ff6b6b;cursor:pointer;font-family:inherit">🗑</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function genInvite(){
+  const code='NS-'+Math.random().toString(36).substr(2,4).toUpperCase()+'-'+Math.random().toString(36).substr(2,4).toUpperCase();
+  const{error}=await SB.from('invite_codes').insert([{code}]);
+  if(!error) document.getElementById('inviteCode').value=code;
+  else alert('Errore generazione codice.');
+}
+
+function copyInvite(){
+  const val=document.getElementById('inviteCode').value;
+  if(!val) return;
+  navigator.clipboard.writeText(val).then(()=>{
+    const btn=document.querySelector('.btn-copy');
+    btn.textContent='✓';setTimeout(()=>btn.textContent='📋',1500);
+  });
+}
+
+function inviaMailto(){
+  const code=document.getElementById('inviteCode').value;
+  const email=document.getElementById('inviteEmail').value.trim();
+  if(!code){alert('Prima genera un codice invito.');return;}
+  if(!email){alert('Inserisci l\'email del ristoratore.');return;}
+  const rist=currentProfile&&currentProfile.ristorante?currentProfile.ristorante:'NoShowApp';
+  const oggetto=encodeURIComponent('Il tuo codice invito per NoShowApp');
+  const corpo=encodeURIComponent(
+    'Ciao,\n\n' +
+    'ti invito a provare NoShowApp, il database condiviso tra ristoratori per segnalare i clienti no-show.\n\n' +
+    'Il tuo codice invito personale è:\n\n' +
+    '    ' + code + '\n\n' +
+    'Per registrarti vai su: https://noshowapp.it\n' +
+    'Clicca su "Registrati con codice invito" e inserisci il codice qui sopra.\n\n' +
+    'L\'accesso è gratuito durante la fase beta.\n\n' +
+    'A presto,\n' + rist
+  );
+  window.location.href=`mailto:${email}?subject=${oggetto}&body=${corpo}`;
+  document.getElementById('inviteEmail').value='';
+}
+
+async function eliminaSegnalazione(id){
+  if(!confirm('Eliminare questa segnalazione?')) return;
+  const{error}=await SB.from('noshow').delete().eq('id',id);
+  if(!error){
+    const el=document.getElementById('feed-'+id);
+    if(el) el.remove();
+    // Also refresh search if same number is shown
+    const raw=document.getElementById('searchInput').value.trim();
+    if(raw) cerca(raw);
+  }
+}
+
+async function loadUsers(){
+  const list=document.getElementById('userList');
+  if(!list) return;
+  list.innerHTML='<div class="loading">Caricamento…</div>';
+  const{data:profiles}=await SB.from('profiles').select('*').order('created_at',{ascending:false});
+  if(!profiles||profiles.length===0){list.innerHTML='<div class="empty-state"><div class="ei">👤</div>Nessun utente</div>';return}
+  list.innerHTML=profiles.map(p=>{
+    const sc=p.subscription_status==='active'?'s-active':'s-inactive';
+    const sl=p.subscription_status==='active'?'Attivo':'Inattivo';
+    const isAdmin=p.role==='admin';
+    const isSelf=currentUser&&p.id===currentUser.id;
+    return`<div class="user-item" style="flex-direction:column;align-items:stretch;gap:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div class="user-name">${p.ristorante}</div>
+          <div class="user-email">${isAdmin?'🛡️ Admin':'Ristoratore'}</div>
+        </div>
+        <span class="status-pill ${sc}">${sl}</span>
+      </div>
+      ${!isSelf?`<div style="display:flex;gap:6px;flex-wrap:wrap">
+        ${p.subscription_status!=='active'
+          ?`<button onclick="attivaUtente('${p.id}')" style="font-size:11px;padding:5px 10px;border:1px solid var(--green);border-radius:6px;background:none;color:var(--green);cursor:pointer;font-family:inherit">✓ Attiva</button>`
+          :`<button onclick="disattivaUtente('${p.id}')" style="font-size:11px;padding:5px 10px;border:1px solid var(--red);border-radius:6px;background:none;color:var(--red);cursor:pointer;font-family:inherit">✕ Disattiva</button>`
+        }
+        ${!isAdmin
+          ?`<button onclick="rendiAdmin('${p.id}')" style="font-size:11px;padding:5px 10px;border:1px solid var(--blue);border-radius:6px;background:none;color:var(--blue);cursor:pointer;font-family:inherit">🛡️ Rendi admin</button>`
+          :`<button onclick="rimuoviAdmin('${p.id}')" style="font-size:11px;padding:5px 10px;border:1px solid var(--muted);border-radius:6px;background:none;color:var(--muted);cursor:pointer;font-family:inherit">Rimuovi admin</button>`
+        }
+        <button onclick="eliminaUtente('${p.id}','${p.ristorante}')" style="font-size:11px;padding:5px 10px;border:1px solid var(--muted);border-radius:6px;background:none;color:var(--muted);cursor:pointer;font-family:inherit">🗑 Elimina</button>
+      </div>`:'<div style="font-size:11px;color:var(--muted)">Account corrente</div>'}
+    </div>`;
+  }).join('');
+}
+
+async function attivaUtente(uid){
+  await SB.from('profiles').update({subscription_status:'active'}).eq('id',uid);
+  loadUsers();
+}
+
+async function disattivaUtente(uid){
+  await SB.from('profiles').update({subscription_status:'inactive'}).eq('id',uid);
+  loadUsers();
+}
+
+async function rendiAdmin(uid){
+  if(!confirm('Vuoi rendere questo utente admin?')) return;
+  await SB.from('profiles').update({role:'admin'}).eq('id',uid);
+  loadUsers();
+}
+
+async function rimuoviAdmin(uid){
+  if(!confirm('Vuoi rimuovere i permessi admin a questo utente?')) return;
+  await SB.from('profiles').update({role:'user'}).eq('id',uid);
+  loadUsers();
+}
+
+async function eliminaUtente(uid, ristorante){
+  if(!confirm('Eliminare definitivamente "'+ristorante+'"? Questa azione non è reversibile.')) return;
+  await SB.from('profiles').delete().eq('id',uid);
+  loadUsers();
+}
+
+
+
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
+</script>
+</body>
+</html>
