@@ -1,0 +1,1614 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>SafeTable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* --- TWEAKABLE THEME (host can rewrite this block) --- */
+  :root {
+    --tweak-accent: #f59e0b;
+    --tweak-density: 1;
+  }
+</style>
+<script>
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "variant": "card",
+  "accent": "amber",
+  "showPreviewMessage": true
+}/*EDITMODE-END*/;
+</script>
+<style>
+  /* ========== DESIGN TOKENS ========== */
+  :root {
+    /* Backgrounds — deep neutrals, no pure black */
+    --bg-0:        #0b0d10;
+    --bg-1:        #111418;
+    --bg-2:        #161a20;
+    --bg-3:        #1d222a;
+    --bg-elev:     #1a1f27;
+
+    /* Borders */
+    --line:        #242a33;
+    --line-strong: #313947;
+    --line-soft:   #1c2128;
+
+    /* Text */
+    --ink:         #e9edf3;
+    --ink-mute:    #a3acbd;
+    --ink-dim:     #6b7385;
+    --ink-faint:   #4a5163;
+
+    /* Accents */
+    --amber:       #f59e0b;
+    --amber-soft:  rgba(245, 158, 11, 0.14);
+    --amber-line:  rgba(245, 158, 11, 0.32);
+    --green:       #22c55e;
+    --green-soft:  rgba(34, 197, 94, 0.14);
+    --red:         #ef4444;
+    --red-soft:    rgba(239, 68, 68, 0.14);
+    --blue:        #60a5fa;
+
+    --accent:      var(--amber);
+    --accent-soft: var(--amber-soft);
+    --accent-line: var(--amber-line);
+
+    --radius-sm: 8px;
+    --radius:    12px;
+    --radius-lg: 16px;
+    --radius-xl: 22px;
+
+    --shadow-1: 0 1px 0 rgba(255,255,255,0.04) inset, 0 1px 2px rgba(0,0,0,0.4);
+    --shadow-2: 0 8px 24px rgba(0,0,0,0.45);
+    --shadow-pop: 0 24px 60px rgba(0,0,0,0.55), 0 2px 0 rgba(255,255,255,0.04) inset;
+
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+
+  /* Accent variants (Tweaks) */
+  [data-accent="amber"]  { --accent: #f59e0b; --accent-soft: rgba(245,158,11,.14); --accent-line: rgba(245,158,11,.32); }
+  [data-accent="emerald"]{ --accent: #10b981; --accent-soft: rgba(16,185,129,.14); --accent-line: rgba(16,185,129,.32); }
+  [data-accent="violet"] { --accent: #a78bfa; --accent-soft: rgba(167,139,250,.16); --accent-line: rgba(167,139,250,.34); }
+  [data-accent="rose"]   { --accent: #fb7185; --accent-soft: rgba(251,113,133,.14); --accent-line: rgba(251,113,133,.32); }
+
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; }
+  body {
+    font-family: var(--sans);
+    background: var(--bg-0);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "ss01", "cv11";
+    min-height: 100vh;
+  }
+
+  /* Subtle radial wash */
+  body::before {
+    content:"";
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(1100px 600px at 85% -10%, rgba(245,158,11,0.06), transparent 60%),
+      radial-gradient(900px 600px at -10% 110%, rgba(96,165,250,0.05), transparent 60%);
+    pointer-events:none;
+    z-index: 0;
+  }
+
+  a { color: inherit; }
+
+  /* ========== APP SHELL ========== */
+  .app { position: relative; z-index: 1; max-width: 980px; margin: 0 auto; padding: 28px 22px 120px; }
+
+  .topbar {
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 6px 4px 24px;
+  }
+  .brand { display:flex; align-items:center; gap: 12px; }
+  .brand-mark {
+    width: 38px; height: 38px; border-radius: 11px;
+    background: linear-gradient(155deg, var(--accent), color-mix(in oklab, var(--accent), #000 30%));
+    display:grid; place-items:center; color: #1a1208;
+    box-shadow: 0 6px 18px var(--accent-soft), 0 1px 0 rgba(255,255,255,0.18) inset;
+  }
+  .brand-mark svg { width: 20px; height: 20px; }
+  .brand-name { font-weight: 700; font-size: 18px; letter-spacing: -0.01em; }
+  .brand-sub { font-size: 12px; color: var(--ink-dim); margin-top: 1px; letter-spacing: 0.02em; }
+  .topbar-right { display:flex; align-items:center; gap: 10px; color: var(--ink-dim); font-size: 12.5px; }
+  .pill {
+    display:inline-flex; align-items:center; gap:6px;
+    padding: 5px 10px; border-radius: 999px;
+    background: var(--bg-2); border: 1px solid var(--line);
+    color: var(--ink-mute); font-size: 11.5px; font-weight: 500;
+  }
+  .pill .dot { width:6px; height:6px; border-radius:999px; background: var(--green); box-shadow: 0 0 0 3px var(--green-soft); }
+
+  /* ========== CARDS / SECTIONS ========== */
+  .card {
+    background: linear-gradient(180deg, var(--bg-1), var(--bg-1));
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 22px;
+    box-shadow: var(--shadow-1);
+  }
+  .card + .card { margin-top: 18px; }
+
+  .section-head {
+    display:flex; align-items:flex-end; justify-content:space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .section-head .eyebrow {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-dim);
+  }
+  .section-head h2 {
+    margin: 4px 0 0; font-size: 20px; letter-spacing: -0.01em; font-weight: 700;
+  }
+  .section-head .hint { font-size: 13px; color: var(--ink-mute); }
+
+  /* ========== FORMS ========== */
+  .grid { display: grid; gap: 14px; }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+  @media (max-width: 640px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+
+  .field { display:flex; flex-direction: column; gap: 6px; }
+  .field label {
+    font-size: 12px; font-weight: 600; color: var(--ink-mute); letter-spacing: 0.02em;
+  }
+  .field .help { font-size: 11.5px; color: var(--ink-dim); }
+  .input, .select, .textarea {
+    width: 100%;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    border-radius: var(--radius);
+    padding: 11px 13px;
+    font: 500 14px var(--sans);
+    transition: border-color .15s, background .15s, box-shadow .15s;
+    outline: none;
+  }
+  .input:focus, .select:focus, .textarea:focus {
+    border-color: var(--accent);
+    background: var(--bg-2);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .input::placeholder { color: var(--ink-faint); font-weight: 400; }
+  .textarea { resize: vertical; min-height: 80px; font-family: var(--sans); }
+
+  .input-group {
+    position: relative;
+    display:flex; align-items:center;
+  }
+  .input-group .prefix, .input-group .suffix {
+    position:absolute; pointer-events:none;
+    color: var(--ink-dim); font-weight: 600; font-size: 13px;
+  }
+  .input-group .prefix { left: 13px; }
+  .input-group .suffix { right: 13px; }
+  .input-group .input.with-prefix { padding-left: 30px; }
+  .input-group .input.with-suffix { padding-right: 56px; }
+
+  /* Stepper (numero persone) */
+  .stepper {
+    display: inline-flex; align-items: stretch;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--bg-2);
+    overflow: hidden;
+    width: 100%;
+  }
+  .stepper button {
+    background: transparent;
+    border: none; color: var(--ink-mute);
+    width: 44px; cursor: pointer;
+    font: 600 16px var(--sans);
+    transition: background .12s, color .12s;
+  }
+  .stepper button:hover { background: var(--bg-3); color: var(--ink); }
+  .stepper input {
+    flex: 1; min-width: 0;
+    background: transparent; border: none; color: var(--ink);
+    text-align: center; font: 600 15px var(--sans);
+    outline: none;
+  }
+  .stepper:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+  /* Buttons */
+  .btn {
+    appearance: none; border: 1px solid var(--line); background: var(--bg-2);
+    color: var(--ink);
+    padding: 11px 16px; border-radius: var(--radius);
+    font: 600 14px var(--sans);
+    cursor: pointer;
+    display:inline-flex; align-items:center; justify-content:center; gap: 8px;
+    transition: transform .04s, background .15s, border-color .15s, box-shadow .15s, color .15s;
+  }
+  .btn:hover { background: var(--bg-3); border-color: var(--line-strong); }
+  .btn:active { transform: translateY(1px); }
+  .btn[disabled] { opacity: .45; cursor: not-allowed; }
+  .btn .icon { width: 16px; height: 16px; flex: none; }
+
+  .btn-primary {
+    background: var(--accent);
+    border-color: color-mix(in oklab, var(--accent), #000 25%);
+    color: #1a1208;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.25) inset, 0 6px 18px var(--accent-soft);
+  }
+  .btn-primary:hover { background: color-mix(in oklab, var(--accent), #fff 8%); border-color: color-mix(in oklab, var(--accent), #000 25%); }
+
+  .btn-ghost { background: transparent; }
+  .btn-ghost:hover { background: var(--bg-2); }
+
+  .btn-wa {
+    background: #25D366; border-color: #1fb155; color: #06241a;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.25) inset, 0 6px 18px rgba(37,211,102,.18);
+  }
+  .btn-wa:hover { background: #2bdc6e; }
+
+  .btn-block { width: 100%; }
+  .btn-lg { padding: 13px 18px; font-size: 14.5px; }
+
+  /* Setup row layout */
+  .setup-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+  }
+  @media (max-width: 720px) { .setup-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 460px) { .setup-grid { grid-template-columns: 1fr; } }
+
+  .saved-tag {
+    display:inline-flex; align-items:center; gap: 6px;
+    font-size: 11.5px; color: var(--green);
+    opacity: 0; transition: opacity .25s;
+  }
+  .saved-tag.show { opacity: 1; }
+
+  /* Generate row */
+  .gen-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 720px) { .gen-grid { grid-template-columns: 1fr; } }
+
+  .phone-row { display:flex; gap: 10px; }
+  .country {
+    width: 86px;
+    background: var(--bg-2); border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 11px 13px; color: var(--ink); font: 600 14px var(--sans);
+    text-align: center;
+  }
+
+  /* Override toggle */
+  details.advanced {
+    margin-top: 4px;
+    border: 1px dashed var(--line);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    background: var(--bg-2);
+  }
+  details.advanced[open] { padding-bottom: 18px; }
+  details.advanced summary {
+    cursor: pointer; list-style: none;
+    color: var(--ink-mute); font-size: 13px; font-weight: 500;
+    display:flex; align-items:center; gap: 8px;
+    padding: 4px 0;
+  }
+  details.advanced summary::-webkit-details-marker { display:none; }
+  details.advanced summary .chev { transition: transform .15s; opacity: .7; }
+  details.advanced[open] summary .chev { transform: rotate(90deg); }
+  details.advanced .grid { margin-top: 12px; }
+
+  /* ========== RESULT (link generato) ========== */
+  .result {
+    margin-top: 18px;
+    border: 1px solid var(--accent-line);
+    background: linear-gradient(180deg, var(--accent-soft), transparent 80%), var(--bg-1);
+    border-radius: var(--radius-lg);
+    padding: 18px;
+    display: none;
+  }
+  .result.show { display: block; animation: fadeUp .35s ease; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .result-head {
+    display:flex; align-items:center; gap: 10px;
+    margin-bottom: 14px;
+  }
+  .result-head .badge {
+    display:inline-flex; align-items:center; gap: 6px;
+    background: var(--accent); color: #1a1208;
+    padding: 4px 10px; border-radius: 999px;
+    font: 700 11px var(--sans); letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .result-head .target { font-size: 13.5px; color: var(--ink-mute); }
+  .result-head .target b { color: var(--ink); font-weight: 600; }
+
+  .preview {
+    background: #0e1116;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    color: var(--ink-mute);
+    font: 400 13.5px var(--sans);
+    line-height: 1.55;
+    white-space: pre-wrap;
+    max-height: 280px; overflow: auto;
+  }
+  .preview b { color: var(--ink); }
+
+  .link-row {
+    display:flex; align-items:center; gap: 10px;
+    margin-top: 12px;
+    background: var(--bg-2); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 8px 8px 8px 14px;
+  }
+  .link-row code {
+    flex: 1; min-width: 0;
+    font-family: var(--mono); font-size: 12px; color: var(--ink-mute);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .actions { display:flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+
+  /* ========== HISTORY ========== */
+  .history-empty {
+    color: var(--ink-dim); font-size: 13px; padding: 22px; text-align: center;
+    border: 1px dashed var(--line); border-radius: var(--radius); background: var(--bg-1);
+  }
+  .req-list { display:flex; flex-direction: column; gap: 10px; }
+  .req {
+    display:grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center;
+    padding: 14px 16px; background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    transition: border-color .15s, background .15s;
+  }
+  .req:hover { border-color: var(--line-strong); background: var(--bg-3); }
+  .req .status-dot {
+    width: 10px; height: 10px; border-radius: 999px;
+    background: var(--amber); box-shadow: 0 0 0 4px var(--amber-soft);
+  }
+  .req[data-status="confirmed"] .status-dot { background: var(--green); box-shadow: 0 0 0 4px var(--green-soft); }
+  .req[data-status="charged"] .status-dot { background: var(--red); box-shadow: 0 0 0 4px var(--red-soft); }
+  .req[data-status="cancelled"] .status-dot { background: var(--ink-faint); box-shadow: 0 0 0 4px rgba(255,255,255,0.04); }
+  .req .meta { font-size: 12.5px; color: var(--ink-dim); display:flex; gap: 10px; flex-wrap: wrap; margin-top: 3px; }
+  .req .meta span { display:inline-flex; align-items:center; gap: 5px; }
+  .req .phone { font-weight: 600; font-size: 14.5px; color: var(--ink); letter-spacing: 0.01em; }
+  .req .phone .stat-text {
+    margin-left: 8px;
+    font: 500 11.5px var(--sans);
+    color: var(--amber);
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .req[data-status="confirmed"] .phone .stat-text { color: var(--green); }
+  .req[data-status="charged"] .phone .stat-text { color: var(--red); }
+  .req[data-status="cancelled"] .phone .stat-text { color: var(--ink-faint); }
+  .req .req-actions { display:flex; gap: 6px; }
+  .icon-btn {
+    width: 34px; height: 34px;
+    display:grid; place-items:center;
+    background: transparent; border: 1px solid transparent;
+    color: var(--ink-dim); border-radius: 9px;
+    cursor: pointer; transition: background .12s, color .12s, border-color .12s;
+  }
+  .icon-btn:hover { background: var(--bg-1); color: var(--ink); border-color: var(--line); }
+  .icon-btn.danger:hover { color: var(--red); border-color: var(--red-soft); }
+  .icon-btn .icon { width: 16px; height: 16px; }
+
+  /* ========== TOAST ========== */
+  .toast-wrap { position: fixed; left: 0; right: 0; bottom: 26px; display: grid; place-items: center; pointer-events: none; z-index: 60; }
+  .toast {
+    pointer-events: auto;
+    background: #0f1318; border: 1px solid var(--line-strong);
+    color: var(--ink); padding: 11px 16px; border-radius: 999px;
+    font-size: 13.5px; font-weight: 500;
+    display:inline-flex; align-items:center; gap: 8px;
+    box-shadow: var(--shadow-pop);
+    transform: translateY(20px); opacity: 0;
+    transition: transform .25s, opacity .25s;
+  }
+  .toast.show { transform: none; opacity: 1; }
+  .toast .icon { width: 16px; height: 16px; color: var(--green); }
+  .toast.error .icon { color: var(--red); }
+
+  /* ========== CLIENT PAGE (route #/c/...) ========== */
+  .client-shell {
+    min-height: 100vh;
+    display:grid; place-items:center;
+    padding: 28px 18px 60px;
+    position: relative; z-index: 1;
+  }
+  .client-card {
+    width: 100%; max-width: 460px;
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    padding: 26px;
+    box-shadow: var(--shadow-pop);
+  }
+  .client-head { text-align: center; margin-bottom: 22px; }
+  .client-mark {
+    width: 56px; height: 56px; margin: 4px auto 14px;
+    border-radius: 16px;
+    background: linear-gradient(155deg, var(--accent), color-mix(in oklab, var(--accent), #000 30%));
+    display:grid; place-items:center; color: #1a1208;
+    box-shadow: 0 12px 30px var(--accent-soft);
+  }
+  .client-mark svg { width: 28px; height: 28px; }
+  .client-head .resto { font-size: 12.5px; color: var(--ink-dim); letter-spacing: 0.16em; text-transform: uppercase; }
+  .client-head h1 { margin: 6px 0 4px; font-size: 22px; letter-spacing: -0.01em; font-weight: 700; }
+  .client-head p { margin: 0; color: var(--ink-mute); font-size: 14px; line-height: 1.5; }
+
+  .summary {
+    display:grid; grid-template-columns: 1fr 1fr; gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 18px;
+  }
+  .summary > div {
+    background: var(--bg-2);
+    padding: 12px 14px;
+  }
+  .summary .lbl { font-size: 11px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; }
+  .summary .val { font-size: 15px; color: var(--ink); font-weight: 600; margin-top: 4px; }
+
+  .rules {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 18px;
+  }
+  .rules .rule {
+    display:flex; gap: 10px; align-items: flex-start;
+    padding: 7px 0;
+    color: var(--ink-mute); font-size: 13px; line-height: 1.5;
+  }
+  .rules .rule + .rule { border-top: 1px solid var(--line); }
+  .rules .rule .ic {
+    flex: none; width: 18px; height: 18px;
+    margin-top: 1px; color: var(--accent);
+  }
+  .rules .rule b { color: var(--ink); font-weight: 600; }
+
+  .card-form { display:grid; gap: 12px; }
+  .card-form .field label .small {
+    color: var(--ink-dim); font-weight: 500;
+  }
+
+  /* Mock card visual */
+  .ccard {
+    position: relative;
+    background: linear-gradient(140deg, #1d232c 0%, #11151a 100%);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .ccard::before {
+    content: ""; position: absolute;
+    width: 200px; height: 200px; border-radius: 50%;
+    background: radial-gradient(circle, var(--accent-soft), transparent 70%);
+    top: -80px; right: -50px;
+  }
+  .ccard .chip {
+    width: 36px; height: 26px;
+    border-radius: 5px;
+    background: linear-gradient(135deg, #d4a857, #8a6e2b);
+    margin-bottom: 18px;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.3);
+  }
+  .ccard .num {
+    font-family: var(--mono);
+    font-size: 17px;
+    letter-spacing: 0.12em;
+    color: var(--ink);
+    margin-bottom: 12px;
+    word-spacing: 0.4em;
+  }
+  .ccard .num.empty { color: var(--ink-faint); }
+  .ccard .row {
+    display:flex; justify-content: space-between; align-items: flex-end;
+    font-size: 11px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .ccard .row .v { color: var(--ink); font-family: var(--mono); font-size: 13px; letter-spacing: 0.05em; margin-top: 2px; text-transform: none; }
+  .ccard .brand-mini {
+    position: absolute; right: 16px; bottom: 14px;
+    display:flex; gap: 4px;
+  }
+  .ccard .brand-mini .c1 { width: 22px; height: 22px; border-radius: 50%; background: #eb001b; }
+  .ccard .brand-mini .c2 { width: 22px; height: 22px; border-radius: 50%; background: #ff9900; opacity: 0.85; margin-left: -10px; }
+
+  .secure-row {
+    display:flex; align-items:center; justify-content: center; gap: 6px;
+    margin-top: 14px;
+    font-size: 11.5px; color: var(--ink-dim);
+  }
+  .secure-row .icon { width: 13px; height: 13px; }
+
+  /* Confirmation */
+  .conf-card { text-align: center; padding: 36px 26px; }
+  .conf-mark {
+    width: 64px; height: 64px; margin: 0 auto 16px;
+    border-radius: 50%;
+    background: var(--green-soft);
+    display:grid; place-items:center;
+    color: var(--green);
+    border: 1px solid color-mix(in oklab, var(--green), transparent 70%);
+  }
+  .conf-mark svg { width: 32px; height: 32px; }
+  .conf-card h1 { margin: 0 0 6px; font-size: 22px; }
+  .conf-card p { color: var(--ink-mute); margin: 0 0 22px; line-height: 1.5; }
+  .conf-card .summary { margin-bottom: 18px; }
+  .conf-foot {
+    color: var(--ink-dim); font-size: 12px;
+    padding-top: 16px; border-top: 1px solid var(--line);
+  }
+
+  /* Footer */
+  .footer {
+    margin-top: 28px;
+    text-align: center;
+    color: var(--ink-faint); font-size: 11px;
+    letter-spacing: 0.08em;
+  }
+
+  /* Tweaks variants */
+  [data-variant="minimal"] .card { background: transparent; border-color: var(--line-soft); }
+  [data-variant="minimal"] .topbar { border-bottom: 1px solid var(--line-soft); padding-bottom: 18px; margin-bottom: 8px; }
+
+  [data-variant="dense"] .app { max-width: 760px; }
+  [data-variant="dense"] .card { padding: 16px; }
+  [data-variant="dense"] .section-head { margin-bottom: 12px; }
+  [data-variant="dense"] .input, [data-variant="dense"] .select { padding: 9px 11px; font-size: 13.5px; }
+
+  /* Hide app when on client route */
+  body.route-client .app { display: none; }
+  body:not(.route-client) .client-shell { display: none; }
+
+</style>
+</head>
+<body>
+
+<!-- ===================== APP (ristoratore) ===================== -->
+<div class="app" id="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <!-- shield + card icon -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3 4 6v6c0 4.5 3.4 8.4 8 9 4.6-.6 8-4.5 8-9V6l-8-3Z"/>
+          <path d="M8.5 12h7"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">SafeTable</div>
+        <div class="brand-sub">Garanzia carta · senza addebito</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="pill"><span class="dot"></span> Pronto</span>
+    </div>
+  </header>
+
+  <!-- ============ SETUP ============ -->
+  <section class="card" aria-labelledby="setup-title">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Setup</div>
+        <h2 id="setup-title">Parametri predefiniti</h2>
+      </div>
+      <span class="saved-tag" id="savedTag">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>
+        Salvato
+      </span>
+    </div>
+
+    <div class="setup-grid">
+      <div class="field">
+        <label for="setup-persone">Numero di persone</label>
+        <div class="stepper">
+          <button type="button" data-step="-1" aria-label="Diminuisci">−</button>
+          <input id="setup-persone" type="number" min="1" max="50" value="2" inputmode="numeric" />
+          <button type="button" data-step="1" aria-label="Aumenta">+</button>
+        </div>
+        <div class="help">Default suggerito quando generi un nuovo link</div>
+      </div>
+
+      <div class="field">
+        <label for="setup-penale">Penale per persona</label>
+        <div class="input-group">
+          <span class="prefix">€</span>
+          <input class="input with-prefix" id="setup-penale" type="number" min="0" step="1" value="25" inputmode="numeric" />
+        </div>
+        <div class="help">Importo addebitato per persona in caso di no-show</div>
+      </div>
+
+      <div class="field">
+        <label for="setup-ore">Disdetta gratuita entro</label>
+        <div class="input-group">
+          <input class="input with-suffix" id="setup-ore" type="number" min="1" max="168" step="1" value="24" inputmode="numeric" />
+          <span class="suffix">ore</span>
+        </div>
+        <div class="help">Oltre questa soglia scatta la penale</div>
+      </div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top: 16px;">
+      <div class="field">
+        <label for="setup-resto">Nome ristorante</label>
+        <input class="input" id="setup-resto" type="text" placeholder="Es. Trattoria del Porto" />
+      </div>
+      <div class="field">
+        <label for="setup-resto-phone">Numero del ristorante <span class="help" style="font-weight:400">(per firma messaggio)</span></label>
+        <input class="input" id="setup-resto-phone" type="tel" placeholder="010 1234567" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ GENERA LINK ============ -->
+  <section class="card" aria-labelledby="gen-title">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Nuova richiesta</div>
+        <h2 id="gen-title">Genera link garanzia</h2>
+      </div>
+      <div class="hint">Il cliente riceverà un link su WhatsApp</div>
+    </div>
+
+    <form id="genForm" autocomplete="off" onsubmit="event.preventDefault(); generaLink();">
+      <div class="gen-grid">
+        <div class="field">
+          <label for="gen-phone">Cellulare cliente</label>
+          <div class="phone-row">
+            <input class="country" id="gen-cc" type="text" value="+39" maxlength="5" />
+            <input class="input" id="gen-phone" type="tel" placeholder="333 1234567" inputmode="numeric" required />
+          </div>
+        </div>
+        <div class="field">
+          <label for="gen-name">Nome cliente <span class="help" style="font-weight:400">(facoltativo)</span></label>
+          <input class="input" id="gen-name" type="text" placeholder="Es. Mario Rossi" />
+        </div>
+      </div>
+
+      <div class="field" style="margin-top: 14px;">
+        <label for="gen-date">Data e ora prenotazione <span class="help" style="font-weight:400">(facoltativo)</span></label>
+        <input class="input" id="gen-date" type="datetime-local" />
+      </div>
+
+      <details class="advanced" id="advanced">
+        <summary>
+          <svg class="chev" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          Override parametri per questa richiesta
+        </summary>
+        <div class="grid grid-3">
+          <div class="field">
+            <label for="gen-persone">Persone</label>
+            <div class="stepper">
+              <button type="button" data-stepper="gen-persone" data-step="-1">−</button>
+              <input id="gen-persone" type="number" min="1" max="50" inputmode="numeric" />
+              <button type="button" data-stepper="gen-persone" data-step="1">+</button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="gen-penale">€ a persona</label>
+            <div class="input-group">
+              <span class="prefix">€</span>
+              <input class="input with-prefix" id="gen-penale" type="number" min="0" step="1" inputmode="numeric" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="gen-ore">Ore disdetta</label>
+            <div class="input-group">
+              <input class="input with-suffix" id="gen-ore" type="number" min="1" max="168" inputmode="numeric" />
+              <span class="suffix">ore</span>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <div style="margin-top: 18px; display:flex; gap: 10px; flex-wrap: wrap;">
+        <button class="btn btn-primary btn-lg" type="submit">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>
+          Genera link garanzia
+        </button>
+      </div>
+    </form>
+
+    <!-- Risultato -->
+    <div class="result" id="result" aria-live="polite">
+      <div class="result-head">
+        <span class="badge">Link pronto</span>
+        <span class="target">per <b id="result-target">—</b></span>
+      </div>
+
+      <div class="preview" id="preview"></div>
+
+      <div class="link-row">
+        <code id="result-link">—</code>
+        <button class="btn btn-ghost" type="button" onclick="copyLink()">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+          Copia
+        </button>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-wa btn-lg" type="button" onclick="inviaWhatsApp()">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-1.3 4.4L21 21l-5.3-1.4A8.5 8.5 0 1 1 21 11.5Z"/></svg>
+          Invia su WhatsApp
+        </button>
+        <button class="btn" type="button" onclick="apriAnteprima()">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+          Anteprima cliente
+        </button>
+        <button class="btn btn-ghost" type="button" onclick="resetForm()">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+          Nuova richiesta
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ STORICO ============ -->
+  <section class="card" aria-labelledby="hist-title">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">Storico</div>
+        <h2 id="hist-title">Richieste recenti</h2>
+      </div>
+      <div class="hint" id="histCount">—</div>
+    </div>
+    <div id="history"></div>
+  </section>
+
+  <div class="footer">SAFETABLE · v 2026.04.26</div>
+</div>
+
+
+<!-- ===================== CLIENT VIEW (route #/c/...) ===================== -->
+<div class="client-shell">
+  <div class="client-card" id="clientCard">
+    <!-- riempito dal JS in base allo stato -->
+  </div>
+</div>
+
+<!-- ===================== TOAST ===================== -->
+<div class="toast-wrap"><div class="toast" id="toast"></div></div>
+
+<!-- ===================== JS ===================== -->
+<script>
+/* ============================================
+   BACKEND CONFIG — sostituisci con i tuoi valori
+   (vedi backend/README.md per istruzioni complete)
+   ============================================ */
+const BACKEND = /*BACKEND-BEGIN*/{
+  SUPABASE_URL:  'https://xbksultfskvzgncncada.supabase.co',
+  SUPABASE_ANON: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhia3N1bHRmc2t2emduY25jYWRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxOTQ3NTYsImV4cCI6MjA5Mjc3MDc1Nn0.rbwGn44crD9lbdmE6VnJT2Fh8fsAKlCvbY0NZ-M2shU',
+}/*BACKEND-END*/;
+
+const BACKEND_READY = !!(BACKEND.SUPABASE_URL && BACKEND.SUPABASE_ANON);
+
+/* ---------- Supabase REST helpers ---------- */
+async function sbFetch(path, opts = {}) {
+  if (!BACKEND_READY) throw new Error('Backend non configurato');
+  const res = await fetch(BACKEND.SUPABASE_URL + path, {
+    ...opts,
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': BACKEND.SUPABASE_ANON,
+      'Authorization': 'Bearer ' + BACKEND.SUPABASE_ANON,
+      ...(opts.headers || {}),
+    },
+  });
+  if (!res.ok) {
+    const txt = await res.text();
+    throw new Error('Errore backend: ' + res.status + ' ' + txt);
+  }
+  return res.status === 204 ? null : res.json();
+}
+
+/* ---------- storage: setup in localStorage, cauzioni su Supabase ---------- */
+const DB = {
+  setupKey: 'gcc.setup.v1',
+  reqsKey:  'gcc.reqs.v1',  // cache locale per storico admin
+  loadSetup() {
+    try { return JSON.parse(localStorage.getItem(this.setupKey)) || null; } catch { return null; }
+  },
+  saveSetup(s) { localStorage.setItem(this.setupKey, JSON.stringify(s)); },
+  loadReqs() {
+    try { return JSON.parse(localStorage.getItem(this.reqsKey)) || []; } catch { return []; }
+  },
+  saveReqs(r) { localStorage.setItem(this.reqsKey, JSON.stringify(r)); },
+  upsertReq(req) {
+    const reqs = this.loadReqs();
+    const idx = reqs.findIndex(r => r.id === req.id);
+    if (idx >= 0) reqs[idx] = req; else reqs.unshift(req);
+    this.saveReqs(reqs);
+  },
+  getReq(id) { return this.loadReqs().find(r => r.id === id); },
+
+  /* --- Supabase: leggi cauzione per short_id --- */
+  async fetchReq(shortId) {
+    if (!BACKEND_READY) return this.getReq(shortId);
+    const rows = await sbFetch(`/rest/v1/cauzioni?short_id=eq.${encodeURIComponent(shortId)}&select=*`);
+    if (!rows || !rows.length) return null;
+    return rowToReq(rows[0]);
+  },
+
+  /* --- Supabase: aggiorna status localmente da remoto --- */
+  async refreshStatus(shortId) {
+    const remote = await this.fetchReq(shortId);
+    if (!remote) return null;
+    const local = this.getReq(shortId);
+    if (local && local.status !== remote.status) {
+      local.status = remote.status;
+      local.confirmedAt = remote.confirmedAt;
+      this.upsertReq(local);
+    }
+    return remote;
+  }
+};
+
+function rowToReq(row) {
+  return {
+    id: row.short_id,
+    createdAt: row.created_at,
+    phone: (row.telefono || '').replace(/\D/g,''),
+    phoneDisplay: row.telefono || '',
+    name: row.nome_cliente || '',
+    dateISO: row.data_prenotazione || '',
+    persone: row.persone, penale: row.penale, ore: row.ore_disdetta,
+    resto: row.ristorante_nome, restoPhone: row.ristorante_phone || '',
+    status: row.status,
+    stripeSessionUrl: row.stripe_session_url,
+    confirmedAt: row.confirmed_at,
+  };
+}
+
+/* ---------- helpers ---------- */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+const fmtEuro = (n) => '€' + Number(n||0).toFixed(0);
+const pad = (n) => String(n).padStart(2,'0');
+
+function shortId() {
+  const s = 'abcdefghjkmnpqrstuvwxyz23456789';
+  let out = '';
+  for (let i=0; i<8; i++) out += s[Math.floor(Math.random()*s.length)];
+  return out;
+}
+
+function toast(msg, kind='ok') {
+  const t = $('#toast');
+  t.className = 'toast' + (kind==='error' ? ' error' : '');
+  t.innerHTML = (kind==='error'
+    ? '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v5"/><path d="M12 16h0"/></svg>'
+    : '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>'
+  ) + '<span>' + msg + '</span>';
+  requestAnimationFrame(() => t.classList.add('show'));
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+function formatDateIT(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d)) return '';
+  const giorni = ['domenica','lunedì','martedì','mercoledì','giovedì','venerdì','sabato'];
+  const mesi = ['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
+  return `${giorni[d.getDay()]} ${d.getDate()} ${mesi[d.getMonth()]} alle ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function formatPhoneCompact(p) {
+  return (p||'').replace(/\D/g,'').replace(/^(\d{3})(\d{3})(\d{0,7}).*/, '$1 $2 $3').trim();
+}
+
+function relTime(iso) {
+  const ms = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(ms/60000);
+  if (m < 1) return 'pochi secondi fa';
+  if (m < 60) return m + ' min fa';
+  const h = Math.floor(m/60);
+  if (h < 24) return h + ' ore fa';
+  const d = Math.floor(h/24);
+  return d + ' giorni fa';
+}
+
+/* ---------- setup ---------- */
+function loadSetupIntoForm() {
+  const s = DB.loadSetup() || { persone: 2, penale: 25, ore: 24, resto: '', restoPhone: '' };
+  $('#setup-persone').value = s.persone;
+  $('#setup-penale').value  = s.penale;
+  $('#setup-ore').value     = s.ore;
+  $('#setup-resto').value   = s.resto || '';
+  $('#setup-resto-phone').value = s.restoPhone || '';
+}
+function readSetup() {
+  return {
+    persone:    Math.max(1, +$('#setup-persone').value || 2),
+    penale:     Math.max(0, +$('#setup-penale').value  || 0),
+    ore:        Math.max(1, +$('#setup-ore').value     || 24),
+    resto:      $('#setup-resto').value.trim(),
+    restoPhone: $('#setup-resto-phone').value.trim(),
+  };
+}
+function persistSetupDebounced() {
+  clearTimeout(persistSetupDebounced._t);
+  persistSetupDebounced._t = setTimeout(() => {
+    DB.saveSetup(readSetup());
+    const tag = $('#savedTag');
+    tag.classList.add('show');
+    clearTimeout(persistSetupDebounced._tag);
+    persistSetupDebounced._tag = setTimeout(() => tag.classList.remove('show'), 1400);
+  }, 300);
+}
+
+/* ---------- steppers ---------- */
+function bindSteppers() {
+  $$('.stepper').forEach(stepper => {
+    stepper.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-step]');
+      if (!btn) return;
+      const inp = stepper.querySelector('input');
+      const step = +btn.dataset.step;
+      const v = (+inp.value || 0) + step;
+      const min = +inp.min || 1, max = +inp.max || 99;
+      inp.value = Math.max(min, Math.min(max, v));
+      inp.dispatchEvent(new Event('input', { bubbles:true }));
+    });
+  });
+}
+
+/* ---------- generazione link ---------- */
+function buildClientUrl(req) {
+  // Tutti i dati codificati nell'URL come fallback (così il link funziona ovunque).
+  // Il cliente che apre vede comunque la pagina — il browser locale aggiungerà la richiesta al "DB" se manca.
+  const payload = {
+    v: 1, id: req.id,
+    p: req.persone, e: req.penale, o: req.ore,
+    r: req.resto || '',
+    rp: req.restoPhone || '',
+    n: req.name || '',
+    d: req.dateISO || '',
+  };
+  const enc = btoa(unescape(encodeURIComponent(JSON.stringify(payload))))
+    .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  return location.origin + location.pathname + '#/c/' + req.id + '?' + enc;
+}
+
+function buildMessage(req, url) {
+  const linesGreeting = req.name ? `Gentile ${req.name},` : `Gentile cliente,`;
+  const ristoFirma = req.resto || 'il ristorante';
+  const data = req.dateISO ? `\nPrenotazione: ${formatDateIT(req.dateISO)} per ${req.persone} ${req.persone === 1 ? 'persona' : 'persone'}.` : `\nPrenotazione per ${req.persone} ${req.persone === 1 ? 'persona' : 'persone'}.`;
+  const totale = req.persone * req.penale;
+
+  return `${linesGreeting}${data}
+
+Per confermare la prenotazione presso ${ristoFirma} le chiediamo di registrare una carta di credito a garanzia, al seguente link:
+${url}
+
+CONDIZIONI
+• Nessun importo viene addebitato al momento della registrazione.
+• La carta serve esclusivamente come garanzia.
+• La prenotazione può essere disdetta o modificata gratuitamente fino a ${req.ore} ore prima dell'orario previsto.
+• In caso di mancata presentazione (no-show) o riduzione del numero di coperti oltre tale termine, sarà addebitata una penale di ${fmtEuro(req.penale)} per persona${req.persone>1 ? ` (totale ${fmtEuro(totale)})` : ''}, calcolata sul numero di persone originariamente prenotate.
+
+I dati della carta vengono trattati in modo sicuro e non saranno mai visibili al ristorante.
+
+Grazie per la collaborazione,
+${ristoFirma}`;
+}
+
+function generaLink() {
+  const setup = readSetup();
+  if (!setup.resto) { toast('Inserisci il nome del ristorante nel Setup', 'error'); return; }
+  const adv = $('#advanced').open;
+  const persone = adv ? (+$('#gen-persone').value || setup.persone) : setup.persone;
+  const penale  = adv ? (+$('#gen-penale').value  || setup.penale)  : setup.penale;
+  const ore     = adv ? (+$('#gen-ore').value     || setup.ore)     : setup.ore;
+  const cc = $('#gen-cc').value.trim().replace(/\s/g,'') || '+39';
+  const phoneRaw = $('#gen-phone').value.trim().replace(/\s/g,'');
+  if (!phoneRaw) { toast('Inserisci il numero del cliente', 'error'); return; }
+  const phone = (cc + phoneRaw).replace(/\D/g,'');
+  const phoneE164 = '+' + phone;
+
+  const req = {
+    id: shortId(),
+    createdAt: new Date().toISOString(),
+    phone, phoneDisplay: cc + ' ' + formatPhoneCompact(phoneRaw),
+    name: $('#gen-name').value.trim(),
+    dateISO: $('#gen-date').value || '',
+    persone, penale, ore,
+    resto: setup.resto,
+    restoPhone: setup.restoPhone,
+    status: 'pending',
+  };
+
+  if (!BACKEND_READY) {
+    DB.upsertReq(req);
+    state.lastReq = req;
+    showResult(req);
+    renderHistory();
+    toast('Link generato (offline — backend non configurato)');
+    return;
+  }
+
+  // Crea Stripe Checkout via Edge Function
+  const submitBtn = $('#genForm button[type="submit"]');
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9" stroke-dasharray="40 60"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.9s" repeatCount="indefinite"/></circle></svg> Creazione link…';
+
+  fetch(BACKEND.SUPABASE_URL + '/functions/v1/create-setup-intent', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': BACKEND.SUPABASE_ANON,
+      'Authorization': 'Bearer ' + BACKEND.SUPABASE_ANON,
+    },
+    body: JSON.stringify({
+      short_id: req.id,
+      telefono: phoneE164,
+      nome_cliente: req.name || null,
+      data_prenotazione: req.dateISO || null,
+      persone, penale, ore_disdetta: ore,
+      ristorante_nome: req.resto,
+      ristorante_phone: req.restoPhone || null,
+    }),
+  })
+  .then(async r => {
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+  })
+  .then(data => {
+    req.stripeSessionUrl = data.url;
+    DB.upsertReq(req);
+    state.lastReq = req;
+    showResult(req);
+    renderHistory();
+    toast('Link Stripe generato');
+    startStatusPolling(req.id);
+  })
+  .catch(err => {
+    console.error(err);
+    toast('Errore: ' + (err.message || 'impossibile creare link'), 'error');
+  })
+  .finally(() => {
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg> Genera link garanzia';
+  });
+}
+
+/* ---------- polling status ---------- */
+let pollingTimers = {};
+function startStatusPolling(shortId) {
+  if (!BACKEND_READY) return;
+  if (pollingTimers[shortId]) clearInterval(pollingTimers[shortId]);
+  let count = 0;
+  pollingTimers[shortId] = setInterval(async () => {
+    count++;
+    if (count > 60) { clearInterval(pollingTimers[shortId]); return; }  // 10 min max
+    try {
+      const remote = await DB.refreshStatus(shortId);
+      if (remote && remote.status === 'confirmed') {
+        clearInterval(pollingTimers[shortId]);
+        renderHistory();
+        toast('✓ Carta registrata da ' + (remote.name || 'cliente'));
+      }
+    } catch (e) { /* ignore */ }
+  }, 10000);
+}
+
+function showResult(req) {
+  const url = buildClientUrl(req);
+  const msg = buildMessage(req, url);
+  $('#result-target').textContent = (req.name ? req.name + ' · ' : '') + req.phoneDisplay;
+  $('#result-link').textContent = url;
+  $('#preview').innerHTML = escapeHTML(msg);
+  $('#result').classList.add('show');
+  state.lastReq = req;
+  state.lastUrl = url;
+  state.lastMsg = msg;
+}
+
+function escapeHTML(s) {
+  return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function copyLink() {
+  if (!state.lastUrl) return;
+  navigator.clipboard.writeText(state.lastUrl)
+    .then(() => toast('Link copiato'))
+    .catch(() => toast('Copia non riuscita', 'error'));
+}
+function inviaWhatsApp() {
+  if (!state.lastReq) return;
+  const url = `https://wa.me/${state.lastReq.phone}?text=${encodeURIComponent(state.lastMsg)}`;
+  window.open(url, '_blank', 'noopener');
+}
+function apriAnteprima() {
+  if (!state.lastUrl) return;
+  window.open(state.lastUrl, '_blank', 'noopener');
+}
+function resetForm() {
+  $('#genForm').reset();
+  $('#gen-cc').value = '+39';
+  // ripristina valori default override (vuoti, useranno setup)
+  ['gen-persone','gen-penale','gen-ore'].forEach(id => $('#' + id).value = '');
+  $('#advanced').open = false;
+  $('#result').classList.remove('show');
+  $('#gen-phone').focus();
+}
+
+/* ---------- storico ---------- */
+function renderHistory() {
+  const reqs = DB.loadReqs();
+  const wrap = $('#history');
+  $('#histCount').textContent = reqs.length === 0 ? '' : reqs.length + (reqs.length === 1 ? ' richiesta' : ' richieste');
+  if (reqs.length === 0) {
+    wrap.innerHTML = '<div class="history-empty">Le richieste generate appariranno qui.</div>';
+    return;
+  }
+  const statusLabel = (s) => s === 'confirmed' ? 'Carta registrata' : s === 'charged' ? 'Penale addebitata' : s === 'cancelled' ? 'Annullata' : 'In attesa';
+  wrap.innerHTML = '<div class="req-list">' + reqs.map(r => `
+    <div class="req" data-status="${r.status}">
+      <span class="status-dot" title="${statusLabel(r.status)}"></span>
+      <div>
+        <div class="phone">
+          ${r.name ? escapeHTML(r.name) + ' · ' : ''}${escapeHTML(r.phoneDisplay)}
+          <span class="stat-text">${statusLabel(r.status)}</span>
+        </div>
+        <div class="meta">
+          <span><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 11h20"/></svg> ${fmtEuro(r.penale)}/p · ${r.persone}p · entro ${r.ore}h</span>
+          ${r.dateISO ? `<span><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/></svg> ${escapeHTML(formatDateIT(r.dateISO))}</span>` : ''}
+          <span><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 7v5l3 2"/></svg> ${relTime(r.createdAt)}</span>
+        </div>
+      </div>
+      <div class="req-actions">
+        ${r.status === 'confirmed' ? `
+        <button class="icon-btn" title="Addebita penale (no-show)" onclick="chargeHist('${r.id}')" style="color: var(--red);">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </button>` : ''}
+        <button class="icon-btn" title="Copia link" onclick="copyHist('${r.id}')">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+        </button>
+        <button class="icon-btn" title="Apri anteprima" onclick="openHist('${r.id}')">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+        <button class="icon-btn" title="WhatsApp" onclick="waHist('${r.id}')">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-1.3 4.4L21 21l-5.3-1.4A8.5 8.5 0 1 1 21 11.5Z"/></svg>
+        </button>
+        <button class="icon-btn danger" title="Elimina" onclick="deleteHist('${r.id}')">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+        </button>
+      </div>
+    </div>
+  `).join('') + '</div>';
+}
+
+async function chargeHist(id) {
+  const r = DB.getReq(id); if (!r) return;
+  if (!BACKEND_READY) { toast('Backend non configurato', 'error'); return; }
+  if (r.status !== 'confirmed') { toast('Carta non ancora registrata', 'error'); return; }
+  const totale = r.persone * r.penale;
+  if (!confirm(`Addebitare ${fmtEuro(totale)} (${r.persone} × ${fmtEuro(r.penale)}) sulla carta di ${r.name || r.phoneDisplay}?\n\nL'importo verrà prelevato immediatamente. Confermi il no-show?`)) return;
+  toast('Addebito in corso…');
+  try {
+    const res = await fetch(BACKEND.SUPABASE_URL + '/functions/v1/charge-cauzione', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': BACKEND.SUPABASE_ANON,
+        'Authorization': 'Bearer ' + BACKEND.SUPABASE_ANON,
+      },
+      body: JSON.stringify({ short_id: id }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.error || 'Addebito fallito');
+    r.status = 'charged';
+    DB.upsertReq(r);
+    renderHistory();
+    toast('✓ Penale addebitata: ' + fmtEuro(data.amount));
+  } catch (e) {
+    console.error(e);
+    toast('Errore: ' + e.message, 'error');
+  }
+}
+
+function copyHist(id) {
+  const r = DB.getReq(id); if (!r) return;
+  navigator.clipboard.writeText(buildClientUrl(r)).then(() => toast('Link copiato'));
+}
+function openHist(id) {
+  const r = DB.getReq(id); if (!r) return;
+  window.open(buildClientUrl(r), '_blank', 'noopener');
+}
+function waHist(id) {
+  const r = DB.getReq(id); if (!r) return;
+  const url = buildClientUrl(r);
+  const msg = buildMessage(r, url);
+  window.open(`https://wa.me/${r.phone}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
+}
+function deleteHist(id) {
+  if (!confirm('Eliminare questa richiesta?')) return;
+  const reqs = DB.loadReqs().filter(r => r.id !== id);
+  DB.saveReqs(reqs);
+  renderHistory();
+  toast('Richiesta eliminata');
+}
+
+/* ---------- ROUTING (#/c/:id?payload) ---------- */
+function decodePayload(s) {
+  try {
+    const b64 = s.replace(/-/g,'+').replace(/_/g,'/');
+    const json = decodeURIComponent(escape(atob(b64)));
+    return JSON.parse(json);
+  } catch { return null; }
+}
+
+function reqFromHash() {
+  const hash = location.hash.slice(1); // /c/:id?payload
+  const m = hash.match(/^\/c\/([a-z0-9]+)(?:\?(.+))?$/i);
+  if (!m) return null;
+  const id = m[1];
+  let req = DB.getReq(id);
+  if (!req && m[2] && !/^status=/.test(m[2])) {
+    const p = decodePayload(m[2]);
+    if (p && p.id === id) {
+      req = {
+        id, status: 'pending',
+        createdAt: new Date().toISOString(),
+        phone: '', phoneDisplay: '',
+        name: p.n || '',
+        dateISO: p.d || '',
+        persone: p.p, penale: p.e, ore: p.o,
+        resto: p.r || '', restoPhone: p.rp || '',
+      };
+      DB.upsertReq(req);
+    }
+  }
+  return req;
+}
+
+async function reqFromHashAsync() {
+  const hash = location.hash.slice(1);
+  const m = hash.match(/^\/c\/([a-z0-9]+)(?:\?(.+))?$/i);
+  if (!m) return null;
+  const id = m[1];
+  if (BACKEND_READY) {
+    try {
+      const remote = await DB.fetchReq(id);
+      if (remote) { DB.upsertReq(remote); return remote; }
+    } catch (e) { console.error(e); }
+  }
+  return reqFromHash();
+}
+
+/* ---------- CLIENT VIEW ---------- */
+function routeChanged() {
+  const isClient = /^#\/c\//i.test(location.hash);
+  document.body.classList.toggle('route-client', isClient);
+  if (isClient) renderClient();
+  else renderHistory();
+}
+
+async function renderClient() {
+  const card = $('#clientCard');
+  card.innerHTML = '<div class="conf-card"><div class="conf-mark" style="background:var(--bg-2);color:var(--ink-mute);border-color:var(--line)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9" stroke-dasharray="40 60"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.9s" repeatCount="indefinite"/></circle></svg></div><p style="color:var(--ink-mute)">Caricamento…</p></div>';
+
+  const req = await reqFromHashAsync();
+  if (!req) {
+    card.innerHTML = `
+      <div class="conf-card">
+        <div class="conf-mark" style="background: var(--red-soft); color: var(--red); border-color: rgba(239,68,68,.3)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h0"/></svg>
+        </div>
+        <h1>Link non valido</h1>
+        <p>Il link che hai aperto non è più disponibile o è stato modificato.</p>
+      </div>`;
+    return;
+  }
+  if (req.status === 'confirmed') return renderClientConfirm(req);
+  renderClientForm(req);
+}
+
+function renderClientForm(req) {
+  const card = $('#clientCard');
+  const totale = req.persone * req.penale;
+  const dataStr = req.dateISO ? formatDateIT(req.dateISO) : '—';
+
+  card.innerHTML = `
+    <div class="client-head">
+      <div class="client-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3 4 6v6c0 4.5 3.4 8.4 8 9 4.6-.6 8-4.5 8-9V6l-8-3Z"/>
+          <path d="M8.5 12h7"/>
+        </svg>
+      </div>
+      <div class="resto">${escapeHTML(req.resto || 'Garanzia prenotazione')}</div>
+      <h1>Carta di credito a garanzia</h1>
+      <p>Nessun importo verrà addebitato. La carta serve esclusivamente come garanzia per la sua prenotazione.</p>
+    </div>
+
+    <div class="summary">
+      <div><div class="lbl">Persone</div><div class="val">${req.persone}</div></div>
+      <div><div class="lbl">Penale</div><div class="val">${fmtEuro(req.penale)} / pers.</div></div>
+      <div style="grid-column: 1 / -1"><div class="lbl">${req.dateISO ? 'Data prenotazione' : 'Riferimento'}</div><div class="val">${escapeHTML(dataStr === '—' ? ('Prenotazione presso ' + (req.resto || 'il ristorante')) : dataStr)}</div></div>
+    </div>
+
+    <div class="rules">
+      <div class="rule">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <div><b>Nessun addebito immediato.</b> La carta viene solo registrata in modo sicuro.</div>
+      </div>
+      <div class="rule">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 7v5l3 2"/></svg>
+        <div><b>Disdetta o modifica gratuita</b> fino a <b>${req.ore} ore</b> prima dell'orario della prenotazione.</div>
+      </div>
+      <div class="rule">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h0"/><path d="M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+        <div>Oltre tale termine, in caso di <b>mancata presentazione</b> o <b>riduzione del numero di coperti</b>, sarà addebitata una penale di <b>${fmtEuro(req.penale)} per persona</b>${req.persone>1 ? ` (totale <b>${fmtEuro(totale)}</b>)` : ''}.</div>
+      </div>
+      <div class="rule">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <div>I dati della carta sono <b>cifrati e non visibili</b> al ristorante.</div>
+      </div>
+    </div>
+
+    <div class="ccard" id="ccard">
+      <div class="chip"></div>
+      <div class="num empty">•••• •••• •••• ••••</div>
+      <div class="row">
+        <div>
+          <div>Titolare</div>
+          <div class="v">—</div>
+        </div>
+        <div>
+          <div>Scadenza</div>
+          <div class="v">—</div>
+        </div>
+      </div>
+      <div class="brand-mini"><div class="c1"></div><div class="c2"></div></div>
+    </div>
+
+    ${BACKEND_READY && req.stripeSessionUrl ? `
+      <button class="btn btn-primary btn-lg btn-block" type="button" onclick="goToStripe('${req.stripeSessionUrl.replace(/'/g,"\\'")}')" style="margin-top: 6px;">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Inserisci carta a garanzia
+      </button>
+      <div class="secure-row">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Pagamento sicuro gestito da Stripe · Certificato PCI-DSS
+      </div>
+    ` : `
+    <form class="card-form" id="cardForm" onsubmit="event.preventDefault(); confirmCard('${req.id}');" autocomplete="off">
+      <div class="field">
+        <label for="cc-name">Titolare della carta</label>
+        <input class="input" id="cc-name" type="text" placeholder="Nome e Cognome" required oninput="syncCard()" />
+      </div>
+      <div class="field">
+        <label for="cc-num">Numero carta</label>
+        <input class="input" id="cc-num" type="text" inputmode="numeric" placeholder="0000 0000 0000 0000" maxlength="19" required oninput="formatCardNum(this); syncCard()" />
+      </div>
+      <div class="grid grid-2">
+        <div class="field">
+          <label for="cc-exp">Scadenza <span class="small">(MM/AA)</span></label>
+          <input class="input" id="cc-exp" type="text" inputmode="numeric" placeholder="12/30" maxlength="5" required oninput="formatExp(this); syncCard()" />
+        </div>
+        <div class="field">
+          <label for="cc-cvc">CVC</label>
+          <input class="input" id="cc-cvc" type="text" inputmode="numeric" placeholder="123" maxlength="4" required />
+        </div>
+      </div>
+      <button class="btn btn-primary btn-lg btn-block" type="submit" style="margin-top: 6px;">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Registra carta a garanzia (mock)
+      </button>
+      <div class="secure-row">
+        Modalità demo · backend non configurato
+      </div>
+    </form>
+    `}
+  `;
+}
+
+function goToStripe(url) {
+  window.location.href = url;
+}
+
+function syncCard() {
+  const n = $('#cc-num').value || '';
+  const name = $('#cc-name').value || '';
+  const exp = $('#cc-exp').value || '';
+  $('#ccNum').textContent = n.length ? n.padEnd(19, '•').slice(0,19) : '•••• •••• •••• ••••';
+  $('#ccNum').classList.toggle('empty', n.length < 1);
+  $('#ccName').textContent = name.toUpperCase() || '—';
+  $('#ccExp').textContent = exp || '—';
+}
+function formatCardNum(el) {
+  let v = el.value.replace(/\D/g,'').slice(0,16);
+  el.value = v.replace(/(.{4})/g,'$1 ').trim();
+}
+function formatExp(el) {
+  let v = el.value.replace(/\D/g,'').slice(0,4);
+  if (v.length >= 3) v = v.slice(0,2) + '/' + v.slice(2);
+  el.value = v;
+}
+
+function confirmCard(reqId) {
+  // mock: nessuna validazione vera, semplicemente mark confirmed
+  const req = DB.getReq(reqId);
+  if (!req) return;
+  // small fake delay for realism
+  const btn = $('#cardForm button[type="submit"]');
+  btn.disabled = true;
+  btn.innerHTML = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9" stroke-dasharray="40 60"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.9s" repeatCount="indefinite"/></circle></svg> Verifica in corso…';
+  setTimeout(() => {
+    req.status = 'confirmed';
+    req.confirmedAt = new Date().toISOString();
+    DB.upsertReq(req);
+    renderClientConfirm(req);
+  }, 1100);
+}
+
+function renderClientConfirm(req) {
+  const card = $('#clientCard');
+  const totale = req.persone * req.penale;
+  const dataStr = req.dateISO ? formatDateIT(req.dateISO) : `Prenotazione presso ${req.resto || 'il ristorante'}`;
+  card.innerHTML = `
+    <div class="conf-card">
+      <div class="conf-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>
+      </div>
+      <h1>Carta registrata</h1>
+      <p>La sua prenotazione è confermata. Non è stato addebitato alcun importo.</p>
+
+      <div class="summary">
+        <div><div class="lbl">Persone</div><div class="val">${req.persone}</div></div>
+        <div><div class="lbl">Penale</div><div class="val">${fmtEuro(req.penale)} / pers.</div></div>
+        <div style="grid-column: 1 / -1"><div class="lbl">${req.dateISO ? 'Data prenotazione' : 'Riferimento'}</div><div class="val">${escapeHTML(dataStr)}</div></div>
+      </div>
+
+      <div class="rules" style="text-align:left;">
+        <div class="rule">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 7v5l3 2"/></svg>
+          <div>Può ancora <b>disdire o modificare gratuitamente</b> fino a <b>${req.ow ? req.ow : req.ore} ore</b> prima dell'orario.</div>
+        </div>
+        <div class="rule">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          <div>Riceverà conferma scritta dal ristorante. Per qualsiasi modifica, contatti direttamente <b>${escapeHTML(req.resto || 'il ristorante')}</b>${req.restoPhone ? ` al <b>${escapeHTML(req.restoPhone)}</b>` : ''}.</div>
+        </div>
+      </div>
+
+      <div class="conf-foot">Operazione di test · nessuna carta è stata realmente trasmessa.</div>
+    </div>
+  `;
+}
+
+/* ---------- TWEAKS ---------- */
+function applyTweaks(t) {
+  document.documentElement.dataset.variant = t.variant;
+  document.documentElement.dataset.accent  = t.accent;
+}
+
+let edits = {};
+function getTweaks() {
+  return Object.assign({}, TWEAK_DEFAULTS, edits);
+}
+function setTweak(k, v) {
+  edits[k] = v;
+  applyTweaks(getTweaks());
+  window.parent.postMessage({type:'__edit_mode_set_keys', edits: { [k]: v }}, '*');
+}
+
+function buildTweaksPanel() {
+  const t = getTweaks();
+  let panel = document.getElementById('__tweaks');
+  if (panel) panel.remove();
+  panel = document.createElement('div');
+  panel.id = '__tweaks';
+  panel.style.cssText = `
+    position: fixed; right: 18px; bottom: 18px; z-index: 100;
+    width: 280px;
+    background: #0e1218; border: 1px solid #2a313d; border-radius: 14px;
+    box-shadow: 0 24px 60px rgba(0,0,0,.6);
+    color: var(--ink); font: 500 13px var(--sans);
+    overflow: hidden;
+  `;
+  panel.innerHTML = `
+    <div style="display:flex; align-items:center; justify-content:space-between; padding: 12px 14px; border-bottom:1px solid #232936;">
+      <div style="font-weight:700; letter-spacing:.05em; font-size:11px; text-transform:uppercase; color: var(--ink-mute);">Tweaks</div>
+      <button id="tw-close" style="background:transparent;border:0;color:var(--ink-dim);cursor:pointer;font-size:18px;line-height:1;padding:2px 6px;">×</button>
+    </div>
+    <div style="padding: 14px;">
+      <div style="font-size: 11px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8px;">Layout</div>
+      <div id="tw-variant" style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 16px;"></div>
+      <div style="font-size: 11px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8px;">Accent</div>
+      <div id="tw-accent" style="display:flex; gap: 8px;"></div>
+    </div>
+  `;
+  document.body.appendChild(panel);
+
+  const variants = [
+    { id: 'card', label: 'Card' },
+    { id: 'minimal', label: 'Minimal' },
+    { id: 'dense', label: 'Dense' },
+  ];
+  const $tv = panel.querySelector('#tw-variant');
+  variants.forEach(v => {
+    const b = document.createElement('button');
+    b.textContent = v.label;
+    b.style.cssText = `
+      padding: 8px 0; border-radius: 8px; cursor: pointer;
+      background: ${getTweaks().variant===v.id ? 'var(--accent)' : '#1a2029'};
+      color: ${getTweaks().variant===v.id ? '#1a1208' : 'var(--ink-mute)'};
+      border: 1px solid ${getTweaks().variant===v.id ? 'var(--accent)' : '#2a313d'};
+      font: 600 12.5px var(--sans);
+    `;
+    b.onclick = () => { setTweak('variant', v.id); buildTweaksPanel(); };
+    $tv.appendChild(b);
+  });
+
+  const accents = [
+    { id: 'amber',   c: '#f59e0b' },
+    { id: 'emerald', c: '#10b981' },
+    { id: 'violet',  c: '#a78bfa' },
+    { id: 'rose',    c: '#fb7185' },
+  ];
+  const $ta = panel.querySelector('#tw-accent');
+  accents.forEach(a => {
+    const b = document.createElement('button');
+    b.title = a.id;
+    b.style.cssText = `
+      width: 30px; height: 30px; border-radius: 50%; cursor: pointer;
+      background: ${a.c};
+      border: 2px solid ${getTweaks().accent===a.id ? '#fff' : 'transparent'};
+      box-shadow: 0 0 0 1px #2a313d;
+    `;
+    b.onclick = () => { setTweak('accent', a.id); buildTweaksPanel(); };
+    $ta.appendChild(b);
+  });
+
+  panel.querySelector('#tw-close').onclick = () => {
+    panel.remove();
+    window.parent.postMessage({type:'__edit_mode_dismissed'}, '*');
+  };
+}
+
+window.addEventListener('message', (e) => {
+  const d = e.data || {};
+  if (d.type === '__activate_edit_mode')   buildTweaksPanel();
+  if (d.type === '__deactivate_edit_mode') {
+    const p = document.getElementById('__tweaks'); if (p) p.remove();
+  }
+});
+window.parent.postMessage({type:'__edit_mode_available'}, '*');
+
+/* ---------- INIT ---------- */
+const state = { lastReq: null, lastUrl: null, lastMsg: null };
+
+function init() {
+  applyTweaks(getTweaks());
+  loadSetupIntoForm();
+  bindSteppers();
+
+  // persist setup on change
+  ['#setup-persone','#setup-penale','#setup-ore','#setup-resto','#setup-resto-phone']
+    .forEach(s => $(s).addEventListener('input', persistSetupDebounced));
+
+  renderHistory();
+
+  // routing
+  window.addEventListener('hashchange', routeChanged);
+  routeChanged();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
