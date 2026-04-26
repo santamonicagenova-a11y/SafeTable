@@ -678,8 +678,8 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
       </div>
 
       <div class="field" style="margin-top: 14px;">
-        <label for="gen-date">Data e ora prenotazione <span class="help" style="font-weight:400">(facoltativo)</span></label>
-        <input class="input" id="gen-date" type="datetime-local" />
+        <label for="gen-date">Data e ora prenotazione <span class="help" style="font-weight:400">(obbligatorio)</span></label>
+        <input class="input" id="gen-date" type="datetime-local" required aria-required="true" />
       </div>
 
       <details class="advanced" id="advanced">
@@ -984,7 +984,7 @@ function buildClientUrl(req) {
 
 function buildMessage(req, url) {
   const linesGreeting = req.name ? `Gentile ${req.name},` : `Gentile cliente,`;
-  const ristoFirma = req.resto || 'il ristorante';
+  const ristoFirma = req.resto ? `Ristorante ${req.resto}` : 'il ristorante';
   const data = req.dateISO ? `\nPrenotazione: ${formatDateIT(req.dateISO)} per ${req.persone} ${req.persone === 1 ? 'persona' : 'persone'}.` : `\nPrenotazione per ${req.persone} ${req.persone === 1 ? 'persona' : 'persone'}.`;
   const totale = req.persone * req.penale;
 
@@ -1018,12 +1018,19 @@ function generaLink() {
   const phone = (cc + phoneRaw).replace(/\D/g,'');
   const phoneE164 = '+' + phone;
 
+  const dateValue = $('#gen-date').value;
+  if (!dateValue) {
+    toast('Inserisci data e ora della prenotazione', 'error');
+    $('#gen-date').focus();
+    return;
+  }
+
   const req = {
     id: shortId(),
     createdAt: new Date().toISOString(),
     phone, phoneDisplay: cc + ' ' + formatPhoneCompact(phoneRaw),
     name: $('#gen-name').value.trim(),
-    dateISO: $('#gen-date').value || '',
+    dateISO: dateValue,
     persone, penale, ore,
     resto: setup.resto,
     restoPhone: setup.restoPhone,
@@ -1330,7 +1337,7 @@ function renderClientForm(req) {
           <path d="M8.5 12h7"/>
         </svg>
       </div>
-      <div class="resto">${escapeHTML(req.resto || 'Garanzia prenotazione')}</div>
+      <div class="resto">${escapeHTML(req.resto ? 'Ristorante ' + req.resto : 'Garanzia prenotazione')}</div>
       <h1>Carta di credito a garanzia</h1>
       <p>Nessun importo verrà addebitato. La carta serve esclusivamente come garanzia per la sua prenotazione.</p>
     </div>
@@ -1481,7 +1488,7 @@ function renderClientConfirm(req) {
         </div>
         <div class="rule">
           <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-          <div>Riceverà conferma scritta dal ristorante. Per qualsiasi modifica, contatti direttamente <b>${escapeHTML(req.resto || 'il ristorante')}</b>${req.restoPhone ? ` al <b>${escapeHTML(req.restoPhone)}</b>` : ''}.</div>
+          <div>Riceverà conferma scritta dal ristorante. Per qualsiasi modifica, contatti direttamente <b>${escapeHTML(req.resto ? 'Ristorante ' + req.resto : 'il ristorante')}</b>${req.restoPhone ? ` al <b>${escapeHTML(req.restoPhone)}</b>` : ''}.</div>
         </div>
       </div>
 
