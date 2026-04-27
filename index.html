@@ -845,7 +845,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
     <div id="history"></div>
   </section>
 
-  <div class="footer">SAFETABLE · v 2026.04.27</div>
+  <div class="footer">SAFETABLE · v 2026.04.27.1</div>
 </div>
 
 
@@ -1098,6 +1098,46 @@ Grazie per la collaborazione,
 ${ristoFirma}`;
 }
 
+/* ---------- channel picker (telefono / email) ---------- */
+function setChannel(channel) {
+  const isEmail = channel === 'email';
+
+  const fieldPhone = $('#field-phone');
+  const fieldEmail = $('#field-email');
+  if (fieldPhone) fieldPhone.style.display = isEmail ? 'none' : '';
+  if (fieldEmail) fieldEmail.style.display = isEmail ? '' : 'none';
+
+  // bottoni di invio coerenti col canale scelto
+  const btnWa    = $('#btn-send-wa');
+  const btnSms   = $('#btn-send-sms');
+  const btnEmail = $('#btn-send-email');
+  if (btnWa)    btnWa.style.display    = isEmail ? 'none' : '';
+  if (btnSms)   btnSms.style.display   = isEmail ? 'none' : '';
+  if (btnEmail) btnEmail.style.display = isEmail ? '' : 'none';
+
+  // hint sotto il titolo
+  const hint = document.querySelector('#gen-title')?.parentElement?.nextElementSibling;
+  if (hint && hint.classList.contains('hint')) {
+    hint.textContent = isEmail
+      ? 'Invio del link via email al cliente'
+      : 'Invio del link via WhatsApp o SMS al cliente';
+  }
+
+  // sincronizza il radio (utile quando setChannel è chiamata da resetForm/init)
+  const radio = document.querySelector(`input[name="channel"][value="${channel}"]`);
+  if (radio && !radio.checked) radio.checked = true;
+
+  // focus sul primo campo utile
+  setTimeout(() => {
+    if (isEmail) $('#gen-email')?.focus();
+    else $('#gen-phone')?.focus();
+  }, 50);
+}
+
+function getChannel() {
+  return document.querySelector('input[name="channel"]:checked')?.value || 'phone';
+}
+
 function generaLink() {
   const setup = readSetup();
   if (!setup.resto) { toast('Inserisci il nome del ristorante nel Setup', 'error'); return; }
@@ -1105,11 +1145,24 @@ function generaLink() {
   const persone = adv ? (+$('#gen-persone').value || setup.persone) : setup.persone;
   const penale  = adv ? (+$('#gen-penale').value  || setup.penale)  : setup.penale;
   const ore     = adv ? (+$('#gen-ore').value     || setup.ore)     : setup.ore;
-  const cc = $('#gen-cc').value.trim().replace(/\s/g,'') || '+39';
-  const phoneRaw = $('#gen-phone').value.trim().replace(/\s/g,'');
-  if (!phoneRaw) { toast('Inserisci il numero del cliente', 'error'); return; }
-  const phone = (cc + phoneRaw).replace(/\D/g,'');
-  const phoneE164 = '+' + phone;
+
+  const channel = getChannel();
+  let phone = '', phoneDisplay = '', email = '';
+
+  if (channel === 'email') {
+    email = $('#gen-email').value.trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast('Inserisci un indirizzo email valido', 'error');
+      $('#gen-email').focus();
+      return;
+    }
+  } else {
+    const cc = $('#gen-cc').value.trim().replace(/\s/g,'') || '+39';
+    const phoneRaw = $('#gen-phone').value.trim().replace(/\s/g,'');
+    if (!phoneRaw) { toast('Inserisci il numero del cliente', 'error'); return; }
+    phone = (cc + phoneRaw).replace(/\D/g,'');
+    phoneDisplay = cc + ' ' + formatPhoneCompact(phoneRaw);
+  }
 
   const dateValue = $('#gen-date').value;
   if (!dateValue) {
@@ -1121,7 +1174,8 @@ function generaLink() {
   const req = {
     id: shortId(),
     createdAt: new Date().toISOString(),
-    phone, phoneDisplay: cc + ' ' + formatPhoneCompact(phoneRaw),
+    channel,
+    phone, phoneDisplay, email,
     name: $('#gen-name').value.trim(),
     dateISO: dateValue,
     persone, penale, ore,
@@ -1207,7 +1261,8 @@ function startStatusPolling(shortId) {
 function showResult(req) {
   const url = buildClientUrl(req);
   const msg = buildMessage(req, url);
-  $('#result-target').textContent = (req.name ? req.name + ' · ' : '') + req.phoneDisplay;
+  const target = req.channel === 'email' ? req.email : req.phoneDisplay;
+  $('#result-target').textContent = (req.name ? req.name + ' · ' : '') + (target || '—');
   $('#result-link').textContent = url;
   $('#preview').innerHTML = escapeHTML(msg);
   $('#result').classList.add('show');
@@ -1227,9 +1282,20 @@ function copyLink() {
     .catch(() => toast('Copia non riuscita', 'error'));
 }
 function inviaWhatsApp() {
-  if (!state.lastReq) return;
+  if (!state.lastReq || !state.lastReq.phone) return;
   const url = `https://wa.me/${state.lastReq.phone}?text=${encodeURIComponent(state.lastMsg)}`;
   window.open(url, '_blank', 'noopener');
+}
+function inviaSMS() {
+  if (!state.lastReq || !state.lastReq.phone) return;
+  const url = `sms:+${state.lastReq.phone}?body=${encodeURIComponent(state.lastMsg)}`;
+  window.open(url, '_blank', 'noopener');
+}
+function inviaEmail() {
+  if (!state.lastReq || !state.lastReq.email) return;
+  const subject = `Garanzia prenotazione · Ristorante ${state.lastReq.resto || ''}`.trim();
+  const url = `mailto:${state.lastReq.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(state.lastMsg)}`;
+  window.location.href = url;
 }
 function apriAnteprima() {
   if (!state.lastUrl) return;
@@ -1242,7 +1308,7 @@ function resetForm() {
   ['gen-persone','gen-penale','gen-ore'].forEach(id => $('#' + id).value = '');
   $('#advanced').open = false;
   $('#result').classList.remove('show');
-  $('#gen-phone').focus();
+  setChannel('phone');
 }
 
 /* ---------- storico ---------- */
@@ -1702,6 +1768,12 @@ function init() {
     .forEach(s => $(s).addEventListener('input', persistSetupDebounced));
 
   renderHistory();
+
+  // canale di invio: imposta stato iniziale e listener
+  document.querySelectorAll('input[name="channel"]').forEach(r => {
+    r.addEventListener('change', () => setChannel(r.value));
+  });
+  setChannel(getChannel());
 
   // routing
   window.addEventListener('hashchange', routeChanged);
