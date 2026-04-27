@@ -51,6 +51,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
     --red:         #ef4444;
     --red-soft:    rgba(239, 68, 68, 0.14);
     --blue:        #60a5fa;
+    --blue-soft:   rgba(96, 165, 250, 0.14);
 
     --accent:      var(--amber);
     --accent-soft: var(--amber-soft);
@@ -424,6 +425,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
     background: var(--amber); box-shadow: 0 0 0 4px var(--amber-soft);
   }
   .req[data-status="confirmed"] .status-dot { background: var(--green); box-shadow: 0 0 0 4px var(--green-soft); }
+  .req[data-status="arrived"] .status-dot { background: var(--blue); box-shadow: 0 0 0 4px var(--blue-soft); }
   .req[data-status="charged"] .status-dot { background: var(--red); box-shadow: 0 0 0 4px var(--red-soft); }
   .req[data-status="cancelled"] .status-dot { background: var(--ink-faint); box-shadow: 0 0 0 4px rgba(255,255,255,0.04); }
   .req .meta { font-size: 12.5px; color: var(--ink-dim); display:flex; gap: 10px; flex-wrap: wrap; margin-top: 3px; }
@@ -436,6 +438,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
     text-transform: uppercase; letter-spacing: 0.06em;
   }
   .req[data-status="confirmed"] .phone .stat-text { color: var(--green); }
+  .req[data-status="arrived"] .phone .stat-text { color: var(--blue); }
   .req[data-status="charged"] .phone .stat-text { color: var(--red); }
   .req[data-status="cancelled"] .phone .stat-text { color: var(--ink-faint); }
   .req .req-actions { display:flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; max-width: 100%; }
@@ -849,7 +852,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
     <div id="history"></div>
   </section>
 
-  <div class="footer">SAFETABLE · v 2026.04.27.4</div>
+  <div class="footer">SAFETABLE · v 2026.04.27.6</div>
 </div>
 
 
@@ -939,8 +942,14 @@ const DB = {
 
   /* --- Supabase: elimina riga per short_id --- */
   async deleteReqRemote(shortId) {
-    if (!BACKEND_READY) return;
-    await sbFetch(`/rest/v1/cauzioni?short_id=eq.${encodeURIComponent(shortId)}`, { method: 'DELETE' });
+    if (!BACKEND_READY) return { deleted: 0 };
+    // Prefer: return=representation fa restituire le righe cancellate -> se l'array è vuoto
+    // significa che nessuna riga è stata effettivamente eliminata (permessi mancanti o riga inesistente)
+    const rows = await sbFetch(`/rest/v1/cauzioni?short_id=eq.${encodeURIComponent(shortId)}`, {
+      method: 'DELETE',
+      headers: { 'Prefer': 'return=representation' },
+    });
+    return { deleted: Array.isArray(rows) ? rows.length : 0 };
   },
 
   /* --- Supabase: leggi cauzione per short_id --- */
@@ -978,6 +987,7 @@ function rowToReq(row) {
     status: row.status,
     stripeSessionUrl: row.stripe_session_url,
     confirmedAt: row.confirmed_at,
+    arrivedAt: row.arrived_at,
   };
 }
 
@@ -1360,7 +1370,7 @@ function renderHistoryFromList(reqs) {
     wrap.innerHTML = '<div class="history-empty">Le richieste generate appariranno qui.</div>';
     return;
   }
-  const statusLabel = (s) => s === 'confirmed' ? 'Carta registrata' : s === 'charged' ? 'Penale addebitata' : s === 'cancelled' ? 'Annullata' : 'In attesa';
+  const statusLabel = (s) => s === 'confirmed' ? 'Carta registrata' : s === 'arrived' ? 'Cliente arrivato' : s === 'charged' ? 'Penale addebitata' : s === 'cancelled' ? 'Annullata' : 'In attesa';
   wrap.innerHTML = '<div class="req-list">' + reqs.map(r => `
     <div class="req" data-status="${r.status}">
       <span class="status-dot" title="${statusLabel(r.status)}"></span>
@@ -1377,6 +1387,9 @@ function renderHistoryFromList(reqs) {
       </div>
       <div class="req-actions">
         ${r.status === 'confirmed' ? `
+        <button class="icon-btn" title="Segna cliente arrivato" onclick="arrivedHist('${r.id}')" style="color: var(--blue);">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        </button>
         <button class="icon-btn" title="Addebita penale (no-show)" onclick="chargeHist('${r.id}')" style="color: var(--red);">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
         </button>` : ''}
@@ -1395,6 +1408,34 @@ function renderHistoryFromList(reqs) {
       </div>
     </div>
   `).join('') + '</div>';
+}
+
+async function arrivedHist(id) {
+  const r = DB.getReq(id); if (!r) return;
+  if (r.status !== 'confirmed') { toast('Stato non valido per segnare l\'arrivo', 'error'); return; }
+  const who = r.name || r.phoneDisplay || 'questo cliente';
+  if (!confirm(`Segnare ${who} come arrivato? La garanzia non sarà più addebitabile, ma resterà nello storico.`)) return;
+
+  // Cancella subito locale + UI
+  r.status = 'arrived';
+  r.arrivedAt = new Date().toISOString();
+  DB.upsertReq(r);
+  renderHistoryFromList(DB.loadReqs());
+
+  if (!BACKEND_READY) { toast('Cliente arrivato'); return; }
+
+  // Aggiorna anche su Supabase tramite REST PATCH
+  try {
+    await sbFetch(`/rest/v1/cauzioni?short_id=eq.${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ status: 'arrived', arrived_at: r.arrivedAt }),
+    });
+    toast('Cliente arrivato');
+  } catch (e) {
+    console.error('Errore aggiornamento remoto:', e);
+    toast('Aggiornato in locale, errore sul server: ' + e.message, 'error');
+  }
 }
 
 async function chargeHist(id) {
@@ -1473,8 +1514,13 @@ async function deleteHist(id) {
   // Cancella anche dal database remoto, altrimenti il prossimo sync la riporta
   if (BACKEND_READY) {
     try {
-      await DB.deleteReqRemote(id);
-      toast('Richiesta eliminata');
+      const result = await DB.deleteReqRemote(id);
+      if (result.deleted === 0) {
+        toast('Eliminata in locale, ma il server non ha cancellato la riga (permessi)', 'error');
+        console.error('DELETE su Supabase ha restituito 0 righe. Probabilmente RLS attivo o GRANT mancante per anon. Vai su Supabase → SQL Editor ed esegui: ALTER TABLE cauzioni DISABLE ROW LEVEL SECURITY; GRANT DELETE ON cauzioni TO anon;');
+      } else {
+        toast('Richiesta eliminata');
+      }
     } catch (e) {
       console.error('Errore eliminazione remota:', e);
       toast('Eliminata in locale, errore sul server: ' + e.message, 'error');
