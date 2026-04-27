@@ -438,7 +438,11 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   .req[data-status="confirmed"] .phone .stat-text { color: var(--green); }
   .req[data-status="charged"] .phone .stat-text { color: var(--red); }
   .req[data-status="cancelled"] .phone .stat-text { color: var(--ink-faint); }
-  .req .req-actions { display:flex; gap: 6px; }
+  .req .req-actions { display:flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; max-width: 100%; }
+  @media (max-width: 560px) {
+    .req { grid-template-columns: 1fr; gap: 10px; }
+    .req .req-actions { justify-content: flex-start; }
+  }
   .icon-btn {
     width: 34px; height: 34px;
     display:grid; place-items:center;
@@ -845,7 +849,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
     <div id="history"></div>
   </section>
 
-  <div class="footer">SAFETABLE · v 2026.04.27.1</div>
+  <div class="footer">SAFETABLE · v 2026.04.27.3</div>
 </div>
 
 
@@ -925,6 +929,14 @@ const DB = {
     this.saveReqs(reqs);
   },
   getReq(id) { return this.loadReqs().find(r => r.id === id); },
+
+  /* --- Supabase: lista tutte le cauzioni del ristorante --- */
+  async fetchAllReqs(restoName) {
+    if (!BACKEND_READY) return this.loadReqs();
+    const filter = restoName ? `&ristorante=eq.${encodeURIComponent(restoName)}` : '';
+    const rows = await sbFetch(`/rest/v1/cauzioni?select=*${filter}&order=created_at.desc&limit=100`);
+    return (rows || []).map(rowToReq);
+  },
 
   /* --- Supabase: leggi cauzione per short_id --- */
   async fetchReq(shortId) {
@@ -1312,9 +1324,34 @@ function resetForm() {
 }
 
 /* ---------- storico ---------- */
-function renderHistory() {
-  const reqs = DB.loadReqs();
+async function renderHistory() {
+  // Render iniziale dal localStorage (rapido, offline-friendly)
+  renderHistoryFromList(DB.loadReqs());
+
+  // Se il backend è configurato, prova a leggere dal DB Supabase e mergia.
+  // Così lo storico è condiviso tra device, non solo sul cellulare che ha generato il link.
+  if (!BACKEND_READY) return;
+  try {
+    const setup = readSetup();
+    const remoteList = await DB.fetchAllReqs(setup.resto);
+    // merge: priorità al remoto, locale solo per richieste assenti dal remoto (es. demo offline).
+    const local = DB.loadReqs();
+    const remoteIds = new Set(remoteList.map(r => r.id));
+    const merged = [
+      ...remoteList,
+      ...local.filter(r => !remoteIds.has(r.id)),
+    ];
+    merged.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+    DB.saveReqs(merged);
+    renderHistoryFromList(merged);
+  } catch (e) {
+    console.warn('Sync storico remoto fallito:', e.message);
+  }
+}
+
+function renderHistoryFromList(reqs) {
   const wrap = $('#history');
+  if (!wrap) return;
   $('#histCount').textContent = reqs.length === 0 ? '' : reqs.length + (reqs.length === 1 ? ' richiesta' : ' richieste');
   if (reqs.length === 0) {
     wrap.innerHTML = '<div class="history-empty">Le richieste generate appariranno qui.</div>';
@@ -1392,7 +1429,31 @@ function copyHist(id) {
 }
 function openHist(id) {
   const r = DB.getReq(id); if (!r) return;
-  window.open(buildClientUrl(r), '_blank', 'noopener');
+  apriAnteprimaUrl(buildClientUrl(r));
+}
+function apriAnteprima() {
+  if (!state.lastUrl) return;
+  apriAnteprimaUrl(state.lastUrl);
+}
+function apriAnteprimaUrl(url) {
+  const modal = $('#previewModal');
+  const frame = $('#previewFrame');
+  if (!modal || !frame) { window.open(url, '_blank', 'noopener'); return; }
+  frame.src = url;
+  modal.classList.add('show');
+  document.body.style.overflow = 'hidden';
+  document.addEventListener('keydown', _escClosePreview);
+}
+function chiudiAnteprima() {
+  const modal = $('#previewModal');
+  const frame = $('#previewFrame');
+  if (modal) modal.classList.remove('show');
+  if (frame) frame.src = 'about:blank';
+  document.body.style.overflow = '';
+  document.removeEventListener('keydown', _escClosePreview);
+}
+function _escClosePreview(e) {
+  if (e.key === 'Escape') chiudiAnteprima();
 }
 function waHist(id) {
   const r = DB.getReq(id); if (!r) return;
@@ -1651,7 +1712,7 @@ function renderClientConfirm(req) {
         </div>
       </div>
 
-      <div class="conf-foot">Operazione di test · nessuna carta è stata realmente trasmessa.</div>
+      <div class="conf-foot">${BACKEND_READY ? 'Carta registrata in modo sicuro tramite Stripe. Nessun addebito è stato effettuato.' : 'Operazione di test · nessuna carta è stata realmente trasmessa.'}</div>
     </div>
   `;
 }
