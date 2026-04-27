@@ -849,7 +849,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
     <div id="history"></div>
   </section>
 
-  <div class="footer">SAFETABLE · v 2026.04.27.3</div>
+  <div class="footer">SAFETABLE · v 2026.04.27.4</div>
 </div>
 
 
@@ -930,12 +930,17 @@ const DB = {
   },
   getReq(id) { return this.loadReqs().find(r => r.id === id); },
 
-  /* --- Supabase: lista tutte le cauzioni del ristorante --- */
-  async fetchAllReqs(restoName) {
+  /* --- Supabase: lista tutte le cauzioni (no filtro per default) --- */
+  async fetchAllReqs() {
     if (!BACKEND_READY) return this.loadReqs();
-    const filter = restoName ? `&ristorante=eq.${encodeURIComponent(restoName)}` : '';
-    const rows = await sbFetch(`/rest/v1/cauzioni?select=*${filter}&order=created_at.desc&limit=100`);
+    const rows = await sbFetch(`/rest/v1/cauzioni?select=*&order=created_at.desc&limit=200`);
     return (rows || []).map(rowToReq);
+  },
+
+  /* --- Supabase: elimina riga per short_id --- */
+  async deleteReqRemote(shortId) {
+    if (!BACKEND_READY) return;
+    await sbFetch(`/rest/v1/cauzioni?short_id=eq.${encodeURIComponent(shortId)}`, { method: 'DELETE' });
   },
 
   /* --- Supabase: leggi cauzione per short_id --- */
@@ -1332,9 +1337,7 @@ async function renderHistory() {
   // Così lo storico è condiviso tra device, non solo sul cellulare che ha generato il link.
   if (!BACKEND_READY) return;
   try {
-    const setup = readSetup();
-    const remoteList = await DB.fetchAllReqs(setup.resto);
-    // merge: priorità al remoto, locale solo per richieste assenti dal remoto (es. demo offline).
+    const remoteList = await DB.fetchAllReqs();
     const local = DB.loadReqs();
     const remoteIds = new Set(remoteList.map(r => r.id));
     const merged = [
@@ -1461,12 +1464,24 @@ function waHist(id) {
   const msg = buildMessage(r, url);
   window.open(`https://wa.me/${r.phone}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
 }
-function deleteHist(id) {
+async function deleteHist(id) {
   if (!confirm('Eliminare questa richiesta?')) return;
+  // Cancella subito da locale e ridisegna
   const reqs = DB.loadReqs().filter(r => r.id !== id);
   DB.saveReqs(reqs);
-  renderHistory();
-  toast('Richiesta eliminata');
+  renderHistoryFromList(reqs);
+  // Cancella anche dal database remoto, altrimenti il prossimo sync la riporta
+  if (BACKEND_READY) {
+    try {
+      await DB.deleteReqRemote(id);
+      toast('Richiesta eliminata');
+    } catch (e) {
+      console.error('Errore eliminazione remota:', e);
+      toast('Eliminata in locale, errore sul server: ' + e.message, 'error');
+    }
+  } else {
+    toast('Richiesta eliminata');
+  }
 }
 
 /* ---------- ROUTING (#/c/:id?payload) ---------- */
