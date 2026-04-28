@@ -901,7 +901,15 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
         <div class="eyebrow">Storico</div>
         <h2 id="hist-title">Richieste recenti</h2>
       </div>
-      <div style="display:flex; align-items:center; gap:10px;">
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap: wrap;">
+        <select id="histFilter" class="input" onchange="setHistFilter(this.value)" style="padding:7px 10px; font-size:13px; background:var(--bg-2); width:auto; min-width:140px;">
+          <option value="all">Tutte</option>
+          <option value="pending">In attesa</option>
+          <option value="confirmed">Carta registrata</option>
+          <option value="arrived">Cliente arrivato</option>
+          <option value="charged">Penale addebitata</option>
+          <option value="cancelled">Annullate</option>
+        </select>
         <div class="hint" id="histCount">—</div>
         <button class="icon-btn" type="button" title="Aggiorna storico dal database" onclick="refreshHistory()">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15.5-6.3L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.3L3 16"/><path d="M3 21v-5h5"/></svg>
@@ -911,7 +919,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
     <div id="history"></div>
   </section>
 
-  <div class="footer">SAFETABLE · v 2026.04.28.5</div>
+  <div class="footer">SAFETABLE · v 2026.04.28.6</div>
 </div>
 
 
@@ -1100,6 +1108,32 @@ function relTime(iso) {
   if (h < 24) return h + ' ore fa';
   const d = Math.floor(h/24);
   return d + ' giorni fa';
+}
+
+/* Calcola scadenza disdetta (= dateISO - ore_disdetta ore) e ritorna {label, level}
+   level: 'safe' (>24h), 'warn' (1-24h), 'urgent' (<1h), 'expired' (passato), 'past-event' (prenotazione passata) */
+function deadlineInfo(req) {
+  if (!req.dateISO || !req.ore) return null;
+  const evt = new Date(req.dateISO).getTime();
+  const now = Date.now();
+  const deadline = evt - req.ore * 3600000;
+  const msToDeadline = deadline - now;
+  const msToEvent = evt - now;
+  if (msToEvent < 0) return { label: 'Prenotazione passata', level: 'past-event' };
+  if (msToDeadline <= 0) return { label: 'Scaduta · ora addebitabile', level: 'expired' };
+  // futuro
+  const totMin = Math.floor(msToDeadline / 60000);
+  const days = Math.floor(totMin / 1440);
+  const hours = Math.floor((totMin - days * 1440) / 60);
+  const mins = totMin - days * 1440 - hours * 60;
+  let label = 'Scade tra ';
+  if (days > 0) label += days + 'g ';
+  if (hours > 0 || days > 0) label += hours + 'h ';
+  label += mins + 'm';
+  let level = 'safe';
+  if (msToDeadline < 3600000) level = 'urgent';
+  else if (msToDeadline < 86400000) level = 'warn';
+  return { label, level };
 }
 
 /* ---------- setup ---------- */
@@ -1463,13 +1497,21 @@ async function refreshHistory() {
 function renderHistoryFromList(reqs) {
   const wrap = $('#history');
   if (!wrap) return;
-  $('#histCount').textContent = reqs.length === 0 ? '' : reqs.length + (reqs.length === 1 ? ' richiesta' : ' richieste');
-  if (reqs.length === 0) {
-    wrap.innerHTML = '<div class="history-empty">Le richieste generate appariranno qui.</div>';
+  // Applica filtro selezionato
+  const filter = state.histFilter || 'all';
+  const filtered = filter === 'all' ? reqs : reqs.filter(r => r.status === filter);
+  $('#histCount').textContent = filtered.length === 0
+    ? (filter === 'all' ? '' : 'Nessuna')
+    : filtered.length + (filtered.length === 1 ? ' richiesta' : ' richieste');
+  if (filtered.length === 0) {
+    wrap.innerHTML = filter === 'all'
+      ? '<div class="history-empty">Le richieste generate appariranno qui.</div>'
+      : '<div class="history-empty">Nessuna richiesta in questo stato.</div>';
     return;
   }
+  const reqsToRender = filtered;
   const statusLabel = (s) => s === 'confirmed' ? 'Carta registrata' : s === 'arrived' ? 'Cliente arrivato' : s === 'charged' ? 'Penale addebitata' : s === 'cancelled' ? 'Annullata' : 'In attesa';
-  wrap.innerHTML = '<div class="req-list">' + reqs.map(r => `
+  wrap.innerHTML = '<div class="req-list">' + reqsToRender.map(r => `
     <div class="req" data-status="${r.status}">
       <span class="status-dot" title="${statusLabel(r.status)}"></span>
       <div>
@@ -1482,6 +1524,12 @@ function renderHistoryFromList(reqs) {
           ${r.dateISO ? `<span><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/></svg> ${escapeHTML(formatDateIT(r.dateISO))}</span>` : ''}
           <span><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 7v5l3 2"/></svg> ${relTime(r.createdAt)}</span>
           ${r.status === 'pending' && r.linkApertoAt ? `<span style="color: var(--amber)" title="Il cliente ha aperto il link ma non ha completato"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg> link aperto ${relTime(r.linkApertoAt)}</span>` : ''}
+          ${(() => {
+            if (!['pending','confirmed'].includes(r.status)) return '';
+            const di = deadlineInfo(r); if (!di) return '';
+            const colors = { safe:'var(--ink-mute)', warn:'var(--amber)', urgent:'var(--red)', expired:'var(--red)', 'past-event':'var(--ink-faint)' };
+            return `<span style="color:${colors[di.level]}" title="Scadenza per disdetta gratuita"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> ${di.label}</span>`;
+          })()}
         </div>
       </div>
       <div class="req-actions">
@@ -2005,7 +2053,13 @@ window.addEventListener('message', (e) => {
 window.parent.postMessage({type:'__edit_mode_available'}, '*');
 
 /* ---------- INIT ---------- */
-const state = { lastReq: null, lastUrl: null, lastMsg: null };
+const state = { lastReq: null, lastUrl: null, lastMsg: null, histFilter: localStorage.getItem('gcc.histFilter') || 'all' };
+
+function setHistFilter(value) {
+  state.histFilter = value;
+  localStorage.setItem('gcc.histFilter', value);
+  renderHistoryFromList(DB.loadReqs());
+}
 
 function init() {
   applyTweaks(getTweaks());
@@ -2015,6 +2069,10 @@ function init() {
   // persist setup on change
   ['#setup-persone','#setup-penale','#setup-ore','#setup-resto','#setup-resto-phone']
     .forEach(s => $(s).addEventListener('input', persistSetupDebounced));
+
+  // sync filtro storico salvato
+  const histFilterEl = $('#histFilter');
+  if (histFilterEl) histFilterEl.value = state.histFilter || 'all';
 
   renderHistory();
 
