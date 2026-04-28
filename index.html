@@ -631,6 +631,60 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   body.route-client .app { display: none; }
   body:not(.route-client) .client-shell { display: none; }
 
+  /* ========== CLIENT — Attention banner & pulsing CTA ========== */
+  .alert-banner {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(239, 68, 68, 0.14));
+    border: 1.5px solid rgba(245, 158, 11, 0.55);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex; gap: 12px; align-items: flex-start;
+    margin-bottom: 18px;
+    color: #fde9b8;
+  }
+  .alert-banner .ic {
+    flex: 0 0 22px; width: 22px; height: 22px;
+    color: var(--amber);
+    margin-top: 1px;
+    animation: pulseGlow 1.6s ease-in-out infinite;
+  }
+  .alert-banner b { color: #fff8e1; }
+  .alert-banner .at-title {
+    font-weight: 700; font-size: 15px;
+    margin-bottom: 4px;
+    color: #fff8e1;
+    letter-spacing: 0.2px;
+  }
+  .alert-banner .at-body { font-size: 13.5px; line-height: 1.45; color: #fde9b8; opacity: 0.92; }
+
+  .arrow-down {
+    display: flex; justify-content: center;
+    color: var(--amber);
+    margin: 8px 0 -2px;
+    animation: bounceDown 1.1s ease-in-out infinite;
+  }
+  .arrow-down svg { width: 30px; height: 30px; }
+
+  .btn-pulse {
+    position: relative;
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.55);
+    animation: pulseRing 1.6s cubic-bezier(0.66, 0, 0, 1) infinite;
+  }
+  .btn-pulse:hover { animation-play-state: paused; }
+
+  @keyframes pulseRing {
+    0%   { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.55); }
+    70%  { box-shadow: 0 0 0 14px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+  }
+  @keyframes bounceDown {
+    0%, 100% { transform: translateY(0); opacity: 0.7; }
+    50%      { transform: translateY(6px); opacity: 1; }
+  }
+  @keyframes pulseGlow {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.6; transform: scale(1.08); }
+  }
+
 </style>
 </head>
 <body>
@@ -857,7 +911,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
     <div id="history"></div>
   </section>
 
-  <div class="footer">SAFETABLE · v 2026.04.28.1</div>
+  <div class="footer">SAFETABLE · v 2026.04.28.5</div>
 </div>
 
 
@@ -993,6 +1047,9 @@ function rowToReq(row) {
     stripeSessionUrl: row.stripe_session_url,
     confirmedAt: row.confirmed_at,
     arrivedAt: row.arrived_at,
+    linkApertoAt: row.link_aperto_at || null,
+    email: row.email || '',
+    channel: row.email ? 'email' : 'phone',
   };
 }
 
@@ -1308,9 +1365,34 @@ function escapeHTML(s) {
   return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
 
+/* Copia testo con fallback per iframe sandbox e contesti non-secure */
+function copyText(text) {
+  // Prova clipboard moderna
+  if (navigator.clipboard && window.isSecureContext) {
+    return navigator.clipboard.writeText(text);
+  }
+  // Fallback: textarea + execCommand
+  return new Promise((resolve, reject) => {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      ta.style.top = '0';
+      ta.setAttribute('readonly', '');
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, text.length);
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      if (ok) resolve(); else reject(new Error('execCommand copy failed'));
+    } catch (e) { reject(e); }
+  });
+}
+
 function copyLink() {
   if (!state.lastUrl) return;
-  navigator.clipboard.writeText(state.lastUrl)
+  copyText(state.lastUrl)
     .then(() => toast('Link copiato'))
     .catch(() => toast('Copia non riuscita', 'error'));
 }
@@ -1392,13 +1474,14 @@ function renderHistoryFromList(reqs) {
       <span class="status-dot" title="${statusLabel(r.status)}"></span>
       <div>
         <div class="phone">
-          ${r.name ? escapeHTML(r.name) + ' · ' : ''}${escapeHTML(r.phoneDisplay)}
+          ${r.name ? escapeHTML(r.name) + ' · ' : ''}${escapeHTML(r.phoneDisplay || r.email || '(senza contatto)')}
           <span class="stat-text">${statusLabel(r.status)}</span>
         </div>
         <div class="meta">
           <span><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 11h20"/></svg> ${fmtEuro(r.penale)}/p · ${r.persone}p · entro ${r.ore}h</span>
           ${r.dateISO ? `<span><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/></svg> ${escapeHTML(formatDateIT(r.dateISO))}</span>` : ''}
           <span><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 7v5l3 2"/></svg> ${relTime(r.createdAt)}</span>
+          ${r.status === 'pending' && r.linkApertoAt ? `<span style="color: var(--amber)" title="Il cliente ha aperto il link ma non ha completato"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg> link aperto ${relTime(r.linkApertoAt)}</span>` : ''}
         </div>
       </div>
       <div class="req-actions">
@@ -1485,7 +1568,9 @@ async function chargeHist(id) {
 
 function copyHist(id) {
   const r = DB.getReq(id); if (!r) return;
-  navigator.clipboard.writeText(buildClientUrl(r)).then(() => toast('Link copiato'));
+  copyText(buildClientUrl(r))
+    .then(() => toast('Link copiato'))
+    .catch(() => toast('Copia non riuscita', 'error'));
 }
 function openHist(id) {
   const r = DB.getReq(id); if (!r) return;
@@ -1618,6 +1703,16 @@ async function renderClient() {
     return;
   }
   if (req.status === 'confirmed') return renderClientConfirm(req);
+
+  // Tracking: marca link aperto su Supabase (best-effort, non blocca il render)
+  if (BACKEND_READY && req.status === 'pending') {
+    sbFetch(`/rest/v1/cauzioni?short_id=eq.${encodeURIComponent(req.id)}&link_aperto_at=is.null`, {
+      method: 'PATCH',
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ link_aperto_at: new Date().toISOString() })
+    }).catch(e => console.warn('Tracking link aperto fallito:', e.message));
+  }
+
   renderClientForm(req);
 }
 
@@ -1627,6 +1722,17 @@ function renderClientForm(req) {
   const dataStr = req.dateISO ? formatDateIT(req.dateISO) : '—';
 
   card.innerHTML = `
+    <div class="alert-banner" role="alert">
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/>
+        <path d="M12 9v4"/><path d="M12 17h0"/>
+      </svg>
+      <div>
+        <div class="at-title">La prenotazione NON è ancora confermata</div>
+        <div class="at-body">Per confermare, clicchi il pulsante <b>"Inserisci carta a garanzia"</b> qui sotto e completi la registrazione della carta sul sistema sicuro Stripe. Nessun importo verrà addebitato.</div>
+      </div>
+    </div>
+
     <div class="client-head">
       <div class="client-mark">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1681,7 +1787,12 @@ function renderClientForm(req) {
     </div>
 
     ${BACKEND_READY && req.stripeSessionUrl ? `
-      <button class="btn btn-primary btn-lg btn-block" type="button" onclick="goToStripe('${req.stripeSessionUrl.replace(/'/g,"\\'")}')" style="margin-top: 6px;">
+      <div class="arrow-down" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 5v14"/><path d="m6 13 6 6 6-6"/>
+        </svg>
+      </div>
+      <button class="btn btn-primary btn-lg btn-block btn-pulse" type="button" onclick="goToStripe('${req.stripeSessionUrl.replace(/'/g,"\\'")}')" style="margin-top: 6px;">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         Inserisci carta a garanzia
       </button>
