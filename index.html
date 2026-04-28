@@ -857,7 +857,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
     <div id="history"></div>
   </section>
 
-  <div class="footer">SAFETABLE · v 2026.04.27.7</div>
+  <div class="footer">SAFETABLE · v 2026.04.28.1</div>
 </div>
 
 
@@ -1239,7 +1239,8 @@ function generaLink() {
     },
     body: JSON.stringify({
       short_id: req.id,
-      telefono: phoneE164,
+      telefono: phone || null,
+      email: email || null,
       nome_cliente: req.name || null,
       data_prenotazione: req.dateISO || null,
       persone, penale, ore_disdetta: ore,
