@@ -919,7 +919,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
     <div id="history"></div>
   </section>
 
-  <div class="footer">SAFETABLE · v 2026.04.28.6</div>
+  <div class="footer">SAFETABLE · v 2026.05.27.07</div>
 </div>
 
 
@@ -1163,6 +1163,79 @@ function persistSetupDebounced() {
     clearTimeout(persistSetupDebounced._tag);
     persistSetupDebounced._tag = setTimeout(() => tag.classList.remove('show'), 1400);
   }, 300);
+}
+
+/* ---------- deep link prefill (Fase 1 carta-garanzia prenotazioni sito) ----------
+   Permette di aprire SafeTable con il form admin (genForm) gia' popolato
+   con i dati cliente, passandoli via query string nella URL.
+   Pattern URL: santamonicagenova-a11y.github.io/SafeTable/?nome=...&telefono=...
+   &data=YYYY-MM-DD&orario=HH:MM&persone=2&penale=25&ore_disdetta=24&email=...
+   Chiamata da init() dopo loadSetupIntoForm(). */
+function prefillFromQueryString() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (params.toString() === '') return; // niente query string, esci
+    let prefilled = false;
+
+    const nome = params.get('nome');
+    if (nome) { $('#gen-name').value = nome; prefilled = true; }
+
+    const telefono = params.get('telefono');
+    if (telefono) {
+      // estraggo country code (+39, +44, ecc.) e parte locale
+      const tel = telefono.trim();
+      const ccMatch = tel.match(/^(\+\d{1,4})\s*(.*)$/);
+      if (ccMatch) {
+        $('#gen-cc').value = ccMatch[1];
+        $('#gen-phone').value = ccMatch[2];
+      } else {
+        $('#gen-phone').value = tel;
+      }
+      // canale phone (default)
+      const r = document.querySelector('input[name="channel"][value="phone"]');
+      if (r) { r.checked = true; setChannel('phone'); }
+      prefilled = true;
+    }
+
+    const email = params.get('email');
+    if (email) {
+      $('#gen-email').value = email;
+      // se NON c'e' un telefono, switcho canale a email
+      if (!telefono) {
+        const r = document.querySelector('input[name="channel"][value="email"]');
+        if (r) { r.checked = true; setChannel('email'); }
+      }
+      prefilled = true;
+    }
+
+    const data = params.get('data');     // formato YYYY-MM-DD
+    const orario = params.get('orario'); // formato HH:MM
+    if (data && orario) {
+      // input datetime-local accetta formato "YYYY-MM-DDTHH:MM"
+      $('#gen-date').value = data + 'T' + orario;
+      prefilled = true;
+    }
+
+    const persone = params.get('persone');
+    if (persone && !isNaN(+persone)) { $('#gen-persone').value = +persone; prefilled = true; }
+
+    const penale = params.get('penale');
+    if (penale && !isNaN(+penale)) { $('#gen-penale').value = +penale; prefilled = true; }
+
+    const oreDisdetta = params.get('ore_disdetta') || params.get('oreDisdetta');
+    if (oreDisdetta && !isNaN(+oreDisdetta)) { $('#gen-ore').value = +oreDisdetta; prefilled = true; }
+
+    if (prefilled) {
+      // scroll fluido sul form admin per far capire all'utente che e' pronto
+      const formEl = document.getElementById('genForm');
+      if (formEl && formEl.scrollIntoView) {
+        setTimeout(() => formEl.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+      }
+      console.log('[SafeTable] form admin pre-compilato da query string');
+    }
+  } catch (err) {
+    console.warn('[SafeTable] prefillFromQueryString failed:', err);
+  }
 }
 
 /* ---------- steppers ---------- */
@@ -2064,6 +2137,7 @@ function setHistFilter(value) {
 function init() {
   applyTweaks(getTweaks());
   loadSetupIntoForm();
+  prefillFromQueryString();  // Fase 1 carta-garanzia prenotazioni: pre-popolamento form admin da deep link mail M1bis
   bindSteppers();
 
   // persist setup on change
