@@ -1231,6 +1231,8 @@ function prefillFromQueryString() {
       if (formEl && formEl.scrollIntoView) {
         setTimeout(() => formEl.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
       }
+      const adv = document.getElementById('advanced');
+      if (adv) adv.open = true;
       console.log('[SafeTable] form admin pre-compilato da query string');
     }
   } catch (err) {
