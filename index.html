@@ -919,7 +919,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
     <div id="history"></div>
   </section>
 
-  <div class="footer">SAFETABLE · v 2026.05.27.07</div>
+  <div class="footer">SAFETABLE · v 2026.06.11.01</div>
 </div>
 
 
@@ -980,6 +980,37 @@ async function sbFetch(path, opts = {}) {
   return res.status === 204 ? null : res.json();
 }
 
+/* ---------- Edge Function helpers (cauzioni in sicurezza, RLS attivo) ---------- */
+const FN_BASE = BACKEND.SUPABASE_URL + '/functions/v1/';
+
+// Chiave amministratore: serve per list/delete/update_status delle cauzioni.
+// In localStorage, chiesta una tantum. Deve combaciare col secret CAUZIONI_ADMIN_SECRET.
+const ADMIN_SECRET_KEY = 'gcc.admin.secret.v1';
+function getAdminSecret() {
+  let s = localStorage.getItem(ADMIN_SECRET_KEY);
+  if (!s) {
+    s = (prompt('Chiave amministratore SafeTable (una tantum):') || '').trim();
+    if (s) localStorage.setItem(ADMIN_SECRET_KEY, s);
+  }
+  return s;
+}
+function clearAdminSecret() { localStorage.removeItem(ADMIN_SECRET_KEY); }
+
+async function adminFetch(action, payload = {}) {
+  if (!BACKEND_READY) throw new Error('Backend non configurato');
+  const secret = getAdminSecret();
+  if (!secret) throw new Error('Chiave amministratore mancante');
+  const res = await fetch(FN_BASE + 'cauzioni-admin', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-secret': secret },
+    body: JSON.stringify({ action, ...payload }),
+  });
+  if (res.status === 401) { clearAdminSecret(); throw new Error('Chiave amministratore errata — riprova'); }
+  if (res.status === 503) throw new Error('Chiave amministratore non ancora configurata sul server');
+  if (!res.ok) { const tx = await res.text(); throw new Error('Errore backend: ' + res.status + ' ' + tx); }
+  return res.json();
+}
+
 /* ---------- storage: setup in localStorage, cauzioni su Supabase ---------- */
 const DB = {
   setupKey: 'gcc.setup.v1',
@@ -1003,8 +1034,8 @@ const DB = {
   /* --- Supabase: lista tutte le cauzioni (no filtro per default) --- */
   async fetchAllReqs() {
     if (!BACKEND_READY) return this.loadReqs();
-    const rows = await sbFetch(`/rest/v1/cauzioni?select=*&order=created_at.desc&limit=200`);
-    return (rows || []).map(rowToReq);
+    const out = await adminFetch('list');
+    return (out.rows || []).map(rowToReq);
   },
 
   /* --- Supabase: elimina riga per short_id --- */
@@ -1012,19 +1043,19 @@ const DB = {
     if (!BACKEND_READY) return { deleted: 0 };
     // Prefer: return=representation fa restituire le righe cancellate -> se l'array è vuoto
     // significa che nessuna riga è stata effettivamente eliminata (permessi mancanti o riga inesistente)
-    const rows = await sbFetch(`/rest/v1/cauzioni?short_id=eq.${encodeURIComponent(shortId)}`, {
-      method: 'DELETE',
-      headers: { 'Prefer': 'return=representation' },
-    });
-    return { deleted: Array.isArray(rows) ? rows.length : 0 };
+    const out = await adminFetch('delete', { short_id: shortId });
+    return { deleted: out.deleted || 0 };
   },
 
   /* --- Supabase: leggi cauzione per short_id --- */
   async fetchReq(shortId) {
     if (!BACKEND_READY) return this.getReq(shortId);
-    const rows = await sbFetch(`/rest/v1/cauzioni?short_id=eq.${encodeURIComponent(shortId)}&select=*`);
-    if (!rows || !rows.length) return null;
-    return rowToReq(rows[0]);
+    const res = await fetch(FN_BASE + 'get-cauzione?short_id=' + encodeURIComponent(shortId));
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error('Errore backend: ' + res.status);
+    const row = await res.json();
+    if (!row) return null;
+    return rowToReq(row);
   },
 
   /* --- Supabase: aggiorna status localmente da remoto --- */
@@ -1648,11 +1679,7 @@ async function arrivedHist(id) {
 
   // Aggiorna anche su Supabase tramite REST PATCH
   try {
-    await sbFetch(`/rest/v1/cauzioni?short_id=eq.${encodeURIComponent(id)}`, {
-      method: 'PATCH',
-      headers: { 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ status: 'arrived', arrived_at: r.arrivedAt }),
-    });
+    await adminFetch('update_status', { short_id: id, status: 'arrived', arrived_at: r.arrivedAt });
     toast('Cliente arrivato');
   } catch (e) {
     console.error('Errore aggiornamento remoto:', e);
@@ -1741,7 +1768,7 @@ async function deleteHist(id) {
       const result = await DB.deleteReqRemote(id);
       if (result.deleted === 0) {
         toast('Eliminata in locale, ma il server non ha cancellato la riga (permessi)', 'error');
-        console.error('DELETE su Supabase ha restituito 0 righe. Probabilmente RLS attivo o GRANT mancante per anon. Vai su Supabase → SQL Editor ed esegui: ALTER TABLE cauzioni DISABLE ROW LEVEL SECURITY; GRANT DELETE ON cauzioni TO anon;');
+        console.error('DELETE via Edge Function ha restituito 0 righe: short_id inesistente o già eliminato.');
       } else {
         toast('Richiesta eliminata');
       }
@@ -1829,10 +1856,10 @@ async function renderClient() {
 
   // Tracking: marca link aperto su Supabase (best-effort, non blocca il render)
   if (BACKEND_READY && req.status === 'pending') {
-    sbFetch(`/rest/v1/cauzioni?short_id=eq.${encodeURIComponent(req.id)}&link_aperto_at=is.null`, {
-      method: 'PATCH',
-      headers: { 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ link_aperto_at: new Date().toISOString() })
+    fetch(FN_BASE + 'track-cauzione', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ short_id: req.id })
     }).catch(e => console.warn('Tracking link aperto fallito:', e.message));
   }
 
