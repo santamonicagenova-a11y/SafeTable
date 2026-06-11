@@ -2177,7 +2177,6 @@ function init() {
   const histFilterEl = $('#histFilter');
   if (histFilterEl) histFilterEl.value = state.histFilter || 'all';
 
-  renderHistory();
 
   // canale di invio: imposta stato iniziale e listener
   document.querySelectorAll('input[name="channel"]').forEach(r => {
