@@ -919,7 +919,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
     <div id="history"></div>
   </section>
 
-  <div class="footer">SAFETABLE · v 2026.06.11.01</div>
+  <div class="footer">SAFETABLE · v 2026.06.11.02</div>
 </div>
 
 
@@ -1433,6 +1433,7 @@ function generaLink() {
       'Content-Type': 'application/json',
       'apikey': BACKEND.SUPABASE_ANON,
       'Authorization': 'Bearer ' + BACKEND.SUPABASE_ANON,
+      'x-admin-secret': getAdminSecret(),
     },
     body: JSON.stringify({
       short_id: req.id,
@@ -1701,6 +1702,7 @@ async function chargeHist(id) {
         'Content-Type': 'application/json',
         'apikey': BACKEND.SUPABASE_ANON,
         'Authorization': 'Bearer ' + BACKEND.SUPABASE_ANON,
+        'x-admin-secret': getAdminSecret(),
       },
       body: JSON.stringify({ short_id: id }),
     });
